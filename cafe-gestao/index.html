@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/jpeg" href="/logo-recreio.jpg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Recreio do Morro • Chapada Diamantina - Bahia | Gestão Agronômica & Distribuição</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+              serif: ['"Playfair Display"', 'Georgia', 'serif'],
+              'serif-brand': ['"Playfair Display"', 'Georgia', 'serif'],
+              playfair: ['"Playfair Display"', 'Georgia', 'serif'],
+            },
+            colors: {
+              recreio: {
+                // Dourado Ocre da Chapada Diamantina (Cores do Sol/Morro do Logo)
+                gold: {
+                  50: '#fdfaf3',
+                  100: '#faeed9',
+                  200: '#f5dcaf',
+                  300: '#ecc47b',
+                  400: '#e0a442',
+                  500: '#c87d13',
+                  600: '#b4670c',
+                  700: '#964f0b',
+                  800: '#7a3e0f',
+                  900: '#643410',
+                  950: '#391a05',
+                },
+                // Marrom Café Tostado / Silhueta do Morro
+                espresso: {
+                  50: '#f8f6f4',
+                  100: '#ede7e1',
+                  200: '#dcd1c5',
+                  300: '#c2b09e',
+                  400: '#a58d79',
+                  500: '#8c725e',
+                  600: '#715a4b',
+                  700: '#5a473b',
+                  800: '#4a3b32',
+                  900: '#3c3029',
+                  950: '#231914',
+                },
+                dark: '#1c120c',
+                cream: '#faf8f4',
+              },
+              folha: {
+                50: '#f2f9f4',
+                100: '#e1f2e6',
+                200: '#c4e5ce',
+                300: '#97d1a8',
+                400: '#64b67e',
+                500: '#3f9a5c',
+                600: '#2f7d48',
+                700: '#27633b',
+                800: '#224f31',
+                900: '#1d422a',
+                950: '#0b2415',
+              },
+              coffee: {
+                50: '#fbf8f5',
+                100: '#f4ede6',
+                200: '#e8dcce',
+                300: '#d7c2ad',
+                400: '#c2a187',
+                500: '#ad8466',
+                600: '#976e52',
+                700: '#7d5942',
+                800: '#674a38',
+                900: '#553d30',
+                950: '#231914',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        color: #1c120c;
+      }
+      .font-serif, .font-serif-brand, .font-playfair {
+        font-family: 'Playfair Display', Georgia, serif !important;
+      }
+      code, pre, .font-mono {
+        font-family: 'JetBrains Mono', monospace;
+      }
+    </style>
+  </head>
+  <body class="bg-[#faf8f4] text-stone-900 antialiased selection:bg-recreio-gold-500 selection:text-white min-h-screen">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
