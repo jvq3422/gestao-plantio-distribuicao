@@ -1,5 +1,6 @@
 import React from 'react';
-import { Beaker, Calculator, History, Sprout, Printer, RotateCcw, Truck, Award } from 'lucide-react';
+import { Beaker, Calculator, History, Sprout, Printer, RotateCcw, Truck, Award, Cloud, WifiOff } from 'lucide-react';
+import { SyncStatus } from '../services/syncService';
 
 interface HeaderProps {
   ambiente: 'adubacao' | 'distribuicao';
@@ -8,6 +9,8 @@ interface HeaderProps {
   setActiveTab: (tab: string) => void;
   onResetData: () => void;
   onPrint: () => void;
+  onOpenNuvemModal?: () => void;
+  syncStatus?: SyncStatus;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,6 +20,8 @@ export const Header: React.FC<HeaderProps> = ({
   setActiveTab,
   onResetData,
   onPrint,
+  onOpenNuvemModal,
+  syncStatus = 'not_configured',
 }) => {
   // Nota: Aba de insights da comunidade removida conforme solicitação expressa
   const tabsAdubacao = [
@@ -79,8 +84,40 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* Quick Actions */}
+          {/* Quick Actions & Cloud Sync */}
           <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
+            {onOpenNuvemModal && (
+              <button
+                onClick={onOpenNuvemModal}
+                title="Sincronização em Tempo Real com a Nuvem e Cache Offline no Campo"
+                className={`inline-flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-xl transition-all border min-h-[36px] ${
+                  syncStatus === 'online'
+                    ? 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100'
+                    : syncStatus === 'offline_cache'
+                    ? 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
+                    : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
+                }`}
+              >
+                {syncStatus === 'online' ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <Cloud className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="hidden sm:inline">Nuvem Sync</span>
+                  </>
+                ) : syncStatus === 'offline_cache' ? (
+                  <>
+                    <WifiOff className="w-3.5 h-3.5 text-amber-600" />
+                    <span className="hidden sm:inline">Modo Campo</span>
+                  </>
+                ) : (
+                  <>
+                    <Cloud className="w-3.5 h-3.5 text-stone-500" />
+                    <span className="hidden sm:inline">Conectar Nuvem</span>
+                  </>
+                )}
+              </button>
+            )}
+
             {ambiente === 'adubacao' && (
               <button
                 onClick={onPrint}

@@ -7,6 +7,8 @@ dist/
 cafe-gestao/dist/
 dist-ssr/
 cafe-gestao/dist-ssr/
+src-tauri/target/
+cafe-gestao/src-tauri/target/
 
 # Logs
 logs

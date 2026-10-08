@@ -3,7 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/jpeg" href="/logo-recreio.jpg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/logo-principal.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/logo-recreio.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Recreio Morro" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#1c120c" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Recreio do Morro • Chapada Diamantina - Bahia | Gestão Agronômica & Distribuição</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -100,5 +108,14 @@
   <body class="bg-[#faf8f4] text-stone-900 antialiased selection:bg-recreio-gold-500 selection:text-white min-h-screen">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.log('SW registration note:', err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>

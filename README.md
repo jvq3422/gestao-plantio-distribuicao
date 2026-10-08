@@ -4,10 +4,42 @@
 
 ---
 
+## 🌐 Arquitetura Multi-Plataforma & Nuvem
+
+```
+       ┌───────────────────────────────┐
+       │   Nuvem: Banco de Dados       │
+       │   Firebase Firestore / Auth   │
+       │   (Sincronização em Tempo Real│
+       │    + Cache Offline no Campo)  │
+       └──────────────┬────────────────┘
+                      │ Sync Bidirecional
+             ┌────────┴────────┐
+             ▼                 ▼
+   ┌───────────────────┐    ┌───────────────────┐
+   │    Computador     │    │   iPhone (iOS)    │
+   │  Aplicativo .exe  │    │   PWA em Tela     │
+   │   (via Tauri v2)  │    │   Cheia (Safari)  │
+   └───────────────────┘    └───────────────────┘
+```
+
+* **☁️ Nuvem & Banco de Dados (Firebase Firestore / Auth):** Sincronização bidirecional em tempo real entre computadores e celulares. Conta com **Cache Offline no Campo** via IndexedDB — os lançamentos de colheita, adubação e vendas podem ser feitos no meio da lavoura sem sinal de internet e são transmitidos automaticamente à nuvem na volta à sede.
+* **📱 iPhone (iOS) - PWA em Tela Cheia (Safari):** Compatível com modo PWA nativo. Basta abrir no Safari e selecionar *Compartilhar (⎋) > Adicionar à Tela de Início (+)* para ter o aplicativo em tela cheia sem barras de navegação.
+* **🖥️ Computador - Aplicativo .exe (via Tauri v2):** Estrutura oficial Tauri v2 configurada em `cafe-gestao/src-tauri/` para compilar o executável `.exe` nativo do Windows. Inclui também o script `iniciar_desktop.bat` para execução rápida em janela de aplicativo nativo.
+
+---
+
 ## 🚀 Como Executar o Sistema (Download & Execução Rápida)
 
-### Opção 1: Execução Automática (Windows)
-Basta dar um duplo clique no arquivo executável na raiz do projeto:
+### Opção 1: Janela de Aplicativo Desktop (Windows)
+Dê um duplo clique no arquivo executável:
+```cmd
+iniciar_desktop.bat
+```
+*(Abre o sistema em uma janela nativa independente, sem barra de navegação de navegador)*
+
+### Opção 2: Servidor Web Local (Windows)
+Dê um duplo clique em:
 ```cmd
 iniciar_sistema.bat
 ```

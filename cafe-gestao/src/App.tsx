@@ -20,6 +20,8 @@ import { ModalNovoTalhao } from './components/ModalNovoTalhao';
 import { ModalNovaAnalise } from './components/ModalNovaAnalise';
 import { ModalNovaColheita } from './components/ModalNovaColheita';
 import { ModuloDistribuicaoView } from './components/distribution/ModuloDistribuicaoView';
+import { NuvemSyncModal } from './components/NuvemSyncModal';
+import { SyncService, SyncStatus } from './services/syncService';
 
 export function App() {
   // Ambiente ativo: 'adubacao' (Lavoura) vs 'distribuicao' (Saídas e Receitas)
@@ -38,16 +40,27 @@ export function App() {
   const [precosNegociados, setPrecosNegociados] = useState<PrecoNegociado[]>([]);
   const [saidas, setSaidas] = useState<SaidaVenda[]>([]);
 
-  // Modais Agronômicos
+  // Modais Agronômicos & Nuvem
   const [isPlotModalOpen, setIsPlotModalOpen] = useState(false);
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
   const [isHarvestModalOpen, setIsHarvestModalOpen] = useState(false);
+  const [isNuvemModalOpen, setIsNuvemModalOpen] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('not_configured');
   const [preselectedPlotId, setPreselectedPlotId] = useState<string>('');
   const [activeWorkOrderPlan, setActiveWorkOrderPlan] = useState<RecommendationPlan | null>(null);
 
-  // Carregar dados na inicialização
+  // Carregar dados na inicialização e ativar sincronização em tempo real
   useEffect(() => {
     loadAllData();
+    const unsubStatus = SyncService.onStatusChange(setSyncStatus);
+    SyncService.startRealtimeSync(() => {
+      loadAllData();
+    });
+
+    return () => {
+      unsubStatus();
+      SyncService.stopRealtimeSync();
+    };
   }, []);
 
   const loadAllData = () => {
@@ -123,6 +136,8 @@ export function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onResetData={handleResetData}
+        onOpenNuvemModal={() => setIsNuvemModalOpen(true)}
+        syncStatus={syncStatus}
         onPrint={() => {
           if (activeWorkOrderPlan) {
             window.print();
@@ -229,6 +244,12 @@ export function App() {
         plan={activeWorkOrderPlan}
         plot={currentWorkOrderPlot}
         onClose={() => setActiveWorkOrderPlan(null)}
+      />
+
+      <NuvemSyncModal
+        isOpen={isNuvemModalOpen}
+        onClose={() => setIsNuvemModalOpen(false)}
+        onSyncCompleted={loadAllData}
       />
     </div>
   );

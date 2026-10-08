@@ -1,0 +1,55 @@
+name: "Compilar Aplicativo Windows (.exe Tauri v2)"
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-tauri:
+    permissions:
+      contents: write
+    runs-on: windows-latest
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: "cafe-gestao/package-lock.json"
+
+      - name: Configurar Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Instalar Dependências do Frontend
+        working-directory: ./cafe-gestao
+        run: npm ci
+
+      - name: Compilar Frontend & Executável Windows (Tauri v2)
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: "./cafe-gestao"
+          tagName: app-v__VERSION__
+          releaseName: "Fazenda Recreio do Morro v__VERSION__ (.exe Windows)"
+          releaseBody: "Executável oficial para Windows compilado com Tauri v2."
+          releaseDraft: false
+          prerelease: false
+
+      - name: Salvar Artefatos do Executável (.exe / .msi)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: recreio-do-morro-windows-app
+          path: |
+            cafe-gestao/src-tauri/target/release/bundle/msi/*.msi
+            cafe-gestao/src-tauri/target/release/bundle/nsis/*.exe
+            cafe-gestao/src-tauri/target/release/*.exe
+          if-no-files-found: warn

@@ -46,6 +46,12 @@ export class StorageService {
   private static KEY_PRECOS = 'recreio_clean_precos_v1';
   private static KEY_SAIDAS = 'recreio_clean_saidas_v1';
 
+  private static syncHook: ((collection: string, entity: any) => void) | null = null;
+
+  static setSyncHook(hook: ((collection: string, entity: any) => void) | null): void {
+    this.syncHook = hook;
+  }
+
   // --- AGRONOMIA & PARÂMETROS DINÂMICOS ---
   static getParametros(): ParametrosAgronomicos {
     const raw = localStorage.getItem(this.KEY_PARAMETROS);
@@ -96,6 +102,7 @@ export class StorageService {
 
   static savePlots(plots: Plot[]): void {
     localStorage.setItem(this.KEY_PLOTS, JSON.stringify(plots));
+    plots.forEach((p) => this.syncHook?.('recreio_plots', p));
   }
 
   static getAnalyses(): SoilAnalysis[] {
@@ -113,6 +120,7 @@ export class StorageService {
 
   static saveAnalyses(analyses: SoilAnalysis[]): void {
     localStorage.setItem(this.KEY_ANALYSES, JSON.stringify(analyses));
+    analyses.forEach((a) => this.syncHook?.('recreio_analyses', a));
   }
 
   static getHarvests(): HarvestRecord[] {
@@ -130,6 +138,7 @@ export class StorageService {
 
   static saveHarvests(harvests: HarvestRecord[]): void {
     localStorage.setItem(this.KEY_HARVESTS, JSON.stringify(harvests));
+    harvests.forEach((h) => this.syncHook?.('recreio_harvests', h));
   }
 
   static getPlans(): RecommendationPlan[] {
@@ -164,6 +173,7 @@ export class StorageService {
 
   static saveProdutos(produtos: Produto[]): void {
     localStorage.setItem(this.KEY_PRODUTOS, JSON.stringify(produtos));
+    produtos.forEach((p) => this.syncHook?.('recreio_produtos', p));
   }
 
   static getPontosVenda(): PontoVenda[] {
@@ -181,6 +191,7 @@ export class StorageService {
 
   static savePontosVenda(pdvs: PontoVenda[]): void {
     localStorage.setItem(this.KEY_PDVS, JSON.stringify(pdvs));
+    pdvs.forEach((p) => this.syncHook?.('recreio_pdvs', p));
   }
 
   static getPrecosNegociados(): PrecoNegociado[] {
@@ -198,6 +209,9 @@ export class StorageService {
 
   static savePrecosNegociados(precos: PrecoNegociado[]): void {
     localStorage.setItem(this.KEY_PRECOS, JSON.stringify(precos));
+    precos.forEach((pr) =>
+      this.syncHook?.('recreio_precos', { ...pr, id: `${pr.pontoVendaId}_${pr.produtoId}` })
+    );
   }
 
   static getPrecoParaPdv(pontoVendaId: string, produtoId: string): number {
@@ -234,6 +248,7 @@ export class StorageService {
 
   static saveSaidas(saidas: SaidaVenda[]): void {
     localStorage.setItem(this.KEY_SAIDAS, JSON.stringify(saidas));
+    saidas.forEach((s) => this.syncHook?.('recreio_saidas', s));
   }
 
   static addSaida(saida: SaidaVenda): void {
