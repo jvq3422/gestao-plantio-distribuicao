@@ -163,6 +163,17 @@ export const NuvemSyncModal: React.FC<NuvemSyncModalProps> = ({
         {/* Sub-tabs */}
         <div className="flex border-b border-stone-200 bg-stone-50/80 px-4 pt-2 gap-1 overflow-x-auto no-scrollbar text-xs font-bold">
           <button
+            onClick={() => setActiveTab('pwa')}
+            className={`px-3 py-2 rounded-t-xl transition-all flex items-center space-x-1.5 whitespace-nowrap ${
+              activeTab === 'pwa'
+                ? 'bg-white text-stone-900 border-t border-x border-stone-200 shadow-xs'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <Smartphone className="w-3.5 h-3.5 text-blue-600" />
+            <span>📱 Conectar iPhone (QR Code)</span>
+          </button>
+          <button
             onClick={() => setActiveTab('status')}
             className={`px-3 py-2 rounded-t-xl transition-all flex items-center space-x-1.5 whitespace-nowrap ${
               activeTab === 'status'
@@ -171,7 +182,7 @@ export const NuvemSyncModal: React.FC<NuvemSyncModalProps> = ({
             }`}
           >
             <RefreshCw className="w-3.5 h-3.5 text-folha-600" />
-            <span>Status & Sincronização</span>
+            <span>Status da Sincronização</span>
           </button>
           <button
             onClick={() => setActiveTab('config')}
@@ -182,18 +193,7 @@ export const NuvemSyncModal: React.FC<NuvemSyncModalProps> = ({
             }`}
           >
             <Cloud className="w-3.5 h-3.5 text-recreio-gold-600" />
-            <span>Configurar Firebase</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('pwa')}
-            className={`px-3 py-2 rounded-t-xl transition-all flex items-center space-x-1.5 whitespace-nowrap ${
-              activeTab === 'pwa'
-                ? 'bg-white text-stone-900 border-t border-x border-stone-200 shadow-xs'
-                : 'text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <Smartphone className="w-3.5 h-3.5 text-blue-600" />
-            <span>iPhone (iOS PWA)</span>
+            <span>Configurações Nuvem</span>
           </button>
           <button
             onClick={() => setActiveTab('desktop')}
@@ -414,54 +414,74 @@ export const NuvemSyncModal: React.FC<NuvemSyncModalProps> = ({
             <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-2 text-blue-950">
               <div className="flex items-center space-x-2 font-bold text-sm text-blue-900">
                 <Smartphone className="w-4 h-4" />
-                <span>Instalação no iPhone (iOS) em Tela Cheia</span>
+                <span>Conexão Imediata do iPhone • Aponte a Câmera</span>
               </div>
               <p className="text-[11px] leading-relaxed">
-                Ao instalar como PWA no iPhone, o sistema roda como aplicativo nativo:
-                sem barra de endereços do Safari, sem botões de navegação, ocupando 100% da tela e com cache offline instantâneo no campo.
+                A sincronização entre o Computador e o iPhone é <strong>100% automática</strong>. Qualquer lançamento feito em qualquer um dos dois aparelhos é sincronizado assim que a internet for detectada. No meio da lavoura sem sinal, o cache salva tudo e envia sozinho quando o sinal voltar.
               </p>
             </div>
 
-            <div className="space-y-3 pt-1">
-              <div className="flex items-start space-x-3 bg-stone-50 p-3 rounded-xl border border-stone-200">
-                <div className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">
+            {/* QR Code Card */}
+            <div className="bg-white border-2 border-dashed border-recreio-gold-300 rounded-2xl p-4 text-center space-y-3 shadow-xs">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 block">
+                Escaneie com a Câmera do seu iPhone:
+              </span>
+              <div className="inline-block p-2 bg-white rounded-2xl border border-stone-200 shadow-md">
+                <img
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Furnaricardo55777.web.app"
+                  alt="QR Code para Acesso no iPhone"
+                  className="w-44 h-44 rounded-xl object-contain mx-auto"
+                />
+              </div>
+              <div className="space-y-1">
+                <div className="text-[11px] font-mono text-stone-700 bg-stone-100 py-1.5 px-3 rounded-lg inline-block border border-stone-200 select-all">
+                  https://urnaricardo55777.web.app
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText('https://urnaricardo55777.web.app');
+                      alert('Link copiado para a área de transferência!');
+                    }}
+                    className="text-xs font-bold text-recreio-gold-700 hover:text-recreio-gold-800 underline ml-2"
+                  >
+                    Copiar Link
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2.5 pt-1">
+              <h4 className="font-bold text-stone-900">Como deixar em Tela Cheia no iPhone (2 toques):</h4>
+              <div className="flex items-start space-x-3 bg-stone-50 p-2.5 rounded-xl border border-stone-200">
+                <div className="w-5 h-5 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shrink-0 text-[11px]">
                   1
                 </div>
                 <div>
-                  <strong className="block text-stone-900">Abra no Safari</strong>
+                  <strong className="block text-stone-900">Aponte a Câmera</strong>
                   <p className="text-stone-500 text-[11px]">
-                    No iPhone, abra este endereço pelo navegador Safari.
+                    Abra a câmera do iPhone, aponte para o QR Code acima e toque no link amarelo para abrir no Safari.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start space-x-3 bg-stone-50 p-3 rounded-xl border border-stone-200">
-                <div className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">
+              <div className="flex items-start space-x-3 bg-stone-50 p-2.5 rounded-xl border border-stone-200">
+                <div className="w-5 h-5 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shrink-0 text-[11px]">
                   2
                 </div>
                 <div>
-                  <strong className="block text-stone-900">Toque em Compartilhar</strong>
+                  <strong className="block text-stone-900">Compartilhar &gt; Adicionar à Tela de Início</strong>
                   <p className="text-stone-500 text-[11px]">
-                    Toque no ícone de <strong>Compartilhar</strong> (quadrado com seta para cima ⎋) na barra inferior do Safari.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3 bg-stone-50 p-3 rounded-xl border border-stone-200">
-                <div className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">
-                  3
-                </div>
-                <div>
-                  <strong className="block text-stone-900">Adicionar à Tela de Início</strong>
-                  <p className="text-stone-500 text-[11px]">
-                    Role o menu para baixo e selecione <strong>"Adicionar à Tela de Início"</strong> (+). Em seguida, toque em "Adicionar" no topo.
+                    No Safari, toque no ícone de <strong>Compartilhar</strong> (quadrado com seta ⎋) e selecione <strong>"Adicionar à Tela de Início"</strong> (+).
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="p-3 bg-folha-50 border border-folha-200 rounded-xl text-folha-900 text-[11px]">
-              ✅ <strong>Pronto:</strong> O ícone oficial da <strong>Fazenda Recreio do Morro</strong> estará na sua tela inicial!
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-[11px] flex items-center space-x-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span><strong>Conexão Pronta:</strong> Os dados do computador e do iPhone já utilizam o mesmo banco na nuvem e sincronizam sozinhos!</span>
             </div>
           </div>
         )}

@@ -85,8 +85,14 @@ export class SyncService {
         if (!snapshot.empty) {
           const remotePlots: Plot[] = [];
           snapshot.forEach((d) => remotePlots.push(d.data() as Plot));
-          StorageService.savePlots(remotePlots);
+          StorageService.savePlots(remotePlots, true);
           onDataUpdated();
+        } else {
+          // Se nuvem estiver vazia e houver dados locais, sobe os dados locais automaticamente
+          const local = StorageService.getPlots();
+          if (local.length > 0) {
+            local.forEach((p) => this.pushEntity('recreio_plots', p));
+          }
         }
       },
       (err) => console.warn('[Sync] Erro snapshot plots:', err)
@@ -99,8 +105,13 @@ export class SyncService {
         if (!snapshot.empty) {
           const remoteAnalyses: SoilAnalysis[] = [];
           snapshot.forEach((d) => remoteAnalyses.push(d.data() as SoilAnalysis));
-          StorageService.saveAnalyses(remoteAnalyses);
+          StorageService.saveAnalyses(remoteAnalyses, true);
           onDataUpdated();
+        } else {
+          const local = StorageService.getAnalyses();
+          if (local.length > 0) {
+            local.forEach((a) => this.pushEntity('recreio_analyses', a));
+          }
         }
       },
       (err) => console.warn('[Sync] Erro snapshot analyses:', err)
@@ -113,8 +124,13 @@ export class SyncService {
         if (!snapshot.empty) {
           const remoteHarvests: HarvestRecord[] = [];
           snapshot.forEach((d) => remoteHarvests.push(d.data() as HarvestRecord));
-          StorageService.saveHarvests(remoteHarvests);
+          StorageService.saveHarvests(remoteHarvests, true);
           onDataUpdated();
+        } else {
+          const local = StorageService.getHarvests();
+          if (local.length > 0) {
+            local.forEach((h) => this.pushEntity('recreio_harvests', h));
+          }
         }
       },
       (err) => console.warn('[Sync] Erro snapshot harvests:', err)
@@ -127,8 +143,13 @@ export class SyncService {
         if (!snapshot.empty) {
           const remoteProdutos: Produto[] = [];
           snapshot.forEach((d) => remoteProdutos.push(d.data() as Produto));
-          StorageService.saveProdutos(remoteProdutos);
+          StorageService.saveProdutos(remoteProdutos, true);
           onDataUpdated();
+        } else {
+          const local = StorageService.getProdutos();
+          if (local.length > 0) {
+            local.forEach((p) => this.pushEntity('recreio_produtos', p));
+          }
         }
       },
       (err) => console.warn('[Sync] Erro snapshot produtos:', err)
@@ -141,8 +162,13 @@ export class SyncService {
         if (!snapshot.empty) {
           const remotePdvs: PontoVenda[] = [];
           snapshot.forEach((d) => remotePdvs.push(d.data() as PontoVenda));
-          StorageService.savePontosVenda(remotePdvs);
+          StorageService.savePontosVenda(remotePdvs, true);
           onDataUpdated();
+        } else {
+          const local = StorageService.getPontosVenda();
+          if (local.length > 0) {
+            local.forEach((p) => this.pushEntity('recreio_pdvs', p));
+          }
         }
       },
       (err) => console.warn('[Sync] Erro snapshot pdvs:', err)
@@ -155,7 +181,7 @@ export class SyncService {
         if (!snapshot.empty) {
           const remotePrecos: PrecoNegociado[] = [];
           snapshot.forEach((d) => remotePrecos.push(d.data() as PrecoNegociado));
-          StorageService.savePrecosNegociados(remotePrecos);
+          StorageService.savePrecosNegociados(remotePrecos, true);
           onDataUpdated();
         }
       },
@@ -169,8 +195,13 @@ export class SyncService {
         if (!snapshot.empty) {
           const remoteSaidas: SaidaVenda[] = [];
           snapshot.forEach((d) => remoteSaidas.push(d.data() as SaidaVenda));
-          StorageService.saveSaidas(remoteSaidas);
+          StorageService.saveSaidas(remoteSaidas, true);
           onDataUpdated();
+        } else {
+          const local = StorageService.getSaidas();
+          if (local.length > 0) {
+            local.forEach((s) => this.pushEntity('recreio_saidas', s));
+          }
         }
       },
       (err) => console.warn('[Sync] Erro snapshot saidas:', err)

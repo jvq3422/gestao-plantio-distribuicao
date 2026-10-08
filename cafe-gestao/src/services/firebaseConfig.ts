@@ -17,9 +17,18 @@ export interface FirebaseClientConfig {
   appId: string;
 }
 
+export const DEFAULT_FIREBASE_CONFIG: FirebaseClientConfig = {
+  projectId: 'urnaricardo55777',
+  appId: '1:688742901853:web:36119f9a90cb8dad57c5b4',
+  storageBucket: 'urnaricardo55777.firebasestorage.app',
+  apiKey: 'AIzaSyCr4daoQiIwIR0gMa9pVWllxSHl7_o70nk',
+  authDomain: 'urnaricardo55777.firebaseapp.com',
+  messagingSenderId: '688742901853',
+};
+
 const STORAGE_KEY = 'recreio_firebase_config_v1';
 
-export function getStoredFirebaseConfig(): FirebaseClientConfig | null {
+export function getStoredFirebaseConfig(): FirebaseClientConfig {
   const local = localStorage.getItem(STORAGE_KEY);
   if (local) {
     try {
@@ -44,7 +53,8 @@ export function getStoredFirebaseConfig(): FirebaseClientConfig | null {
     return envConfig;
   }
 
-  return null;
+  // Padrão automático nativo: Conexão direta e instantânea sem exigir configuração manual do usuário
+  return DEFAULT_FIREBASE_CONFIG;
 }
 
 export function saveStoredFirebaseConfig(config: FirebaseClientConfig): void {

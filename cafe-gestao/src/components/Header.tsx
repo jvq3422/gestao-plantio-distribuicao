@@ -102,12 +102,12 @@ export const Header: React.FC<HeaderProps> = ({
                   <>
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <Cloud className="w-3.5 h-3.5 text-emerald-600" />
-                    <span className="hidden sm:inline">Nuvem Sync</span>
+                    <span className="hidden sm:inline">Nuvem & iPhone (Online)</span>
                   </>
                 ) : syncStatus === 'offline_cache' ? (
                   <>
                     <WifiOff className="w-3.5 h-3.5 text-amber-600" />
-                    <span className="hidden sm:inline">Modo Campo</span>
+                    <span className="hidden sm:inline">Modo Campo (Offline)</span>
                   </>
                 ) : (
                   <>

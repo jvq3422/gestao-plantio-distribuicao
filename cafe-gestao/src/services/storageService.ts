@@ -100,9 +100,11 @@ export class StorageService {
     }
   }
 
-  static savePlots(plots: Plot[]): void {
+  static savePlots(plots: Plot[], skipSync = false): void {
     localStorage.setItem(this.KEY_PLOTS, JSON.stringify(plots));
-    plots.forEach((p) => this.syncHook?.('recreio_plots', p));
+    if (!skipSync) {
+      plots.forEach((p) => this.syncHook?.('recreio_plots', p));
+    }
   }
 
   static getAnalyses(): SoilAnalysis[] {
@@ -118,9 +120,11 @@ export class StorageService {
     }
   }
 
-  static saveAnalyses(analyses: SoilAnalysis[]): void {
+  static saveAnalyses(analyses: SoilAnalysis[], skipSync = false): void {
     localStorage.setItem(this.KEY_ANALYSES, JSON.stringify(analyses));
-    analyses.forEach((a) => this.syncHook?.('recreio_analyses', a));
+    if (!skipSync) {
+      analyses.forEach((a) => this.syncHook?.('recreio_analyses', a));
+    }
   }
 
   static getHarvests(): HarvestRecord[] {
@@ -136,9 +140,11 @@ export class StorageService {
     }
   }
 
-  static saveHarvests(harvests: HarvestRecord[]): void {
+  static saveHarvests(harvests: HarvestRecord[], skipSync = false): void {
     localStorage.setItem(this.KEY_HARVESTS, JSON.stringify(harvests));
-    harvests.forEach((h) => this.syncHook?.('recreio_harvests', h));
+    if (!skipSync) {
+      harvests.forEach((h) => this.syncHook?.('recreio_harvests', h));
+    }
   }
 
   static getPlans(): RecommendationPlan[] {
@@ -171,9 +177,11 @@ export class StorageService {
     }
   }
 
-  static saveProdutos(produtos: Produto[]): void {
+  static saveProdutos(produtos: Produto[], skipSync = false): void {
     localStorage.setItem(this.KEY_PRODUTOS, JSON.stringify(produtos));
-    produtos.forEach((p) => this.syncHook?.('recreio_produtos', p));
+    if (!skipSync) {
+      produtos.forEach((p) => this.syncHook?.('recreio_produtos', p));
+    }
   }
 
   static getPontosVenda(): PontoVenda[] {
@@ -189,9 +197,11 @@ export class StorageService {
     }
   }
 
-  static savePontosVenda(pdvs: PontoVenda[]): void {
+  static savePontosVenda(pdvs: PontoVenda[], skipSync = false): void {
     localStorage.setItem(this.KEY_PDVS, JSON.stringify(pdvs));
-    pdvs.forEach((p) => this.syncHook?.('recreio_pdvs', p));
+    if (!skipSync) {
+      pdvs.forEach((p) => this.syncHook?.('recreio_pdvs', p));
+    }
   }
 
   static getPrecosNegociados(): PrecoNegociado[] {
@@ -207,11 +217,13 @@ export class StorageService {
     }
   }
 
-  static savePrecosNegociados(precos: PrecoNegociado[]): void {
+  static savePrecosNegociados(precos: PrecoNegociado[], skipSync = false): void {
     localStorage.setItem(this.KEY_PRECOS, JSON.stringify(precos));
-    precos.forEach((pr) =>
-      this.syncHook?.('recreio_precos', { ...pr, id: `${pr.pontoVendaId}_${pr.produtoId}` })
-    );
+    if (!skipSync) {
+      precos.forEach((pr) =>
+        this.syncHook?.('recreio_precos', { ...pr, id: `${pr.pontoVendaId}_${pr.produtoId}` })
+      );
+    }
   }
 
   static getPrecoParaPdv(pontoVendaId: string, produtoId: string): number {
@@ -246,9 +258,11 @@ export class StorageService {
     }
   }
 
-  static saveSaidas(saidas: SaidaVenda[]): void {
+  static saveSaidas(saidas: SaidaVenda[], skipSync = false): void {
     localStorage.setItem(this.KEY_SAIDAS, JSON.stringify(saidas));
-    saidas.forEach((s) => this.syncHook?.('recreio_saidas', s));
+    if (!skipSync) {
+      saidas.forEach((s) => this.syncHook?.('recreio_saidas', s));
+    }
   }
 
   static addSaida(saida: SaidaVenda): void {

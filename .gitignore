@@ -34,4 +34,6 @@ Thumbs.db
 dist-desktop/
 *.exe
 *.msi
+.firebase/
+
 
