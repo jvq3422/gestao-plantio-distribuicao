@@ -26,9 +26,9 @@ Escolha abaixo a forma mais conveniente para o seu uso:
 A sincronia entre o computador e o iPhone ocorre de forma **100% automática**:
 
 1. No computador, clique no botão verde do topo **"Nuvem & iPhone (Online)"** para abrir o QR Code.
-2. Aponte a câmera do seu iPhone para o QR Code (ou abra diretamente no Safari: **`https://recreiodomorro.web.app`**).
+2. Aponte a câmera do seu iPhone para o QR Code (ou abra diretamente no Safari: **`https://recreiodomorro-f7e1a.web.app`**).
 3. No Safari, toque no ícone de **Compartilhar** (quadrado com seta ⎋) e escolha **"Adicionar à Tela de Início"** (`+`).
-4. **Pronto!** O app fica instalado no seu iPhone.
+4. **Pronto!** O app fica instalado no seu iPhone com ícone oficial e acesso instantâneo.
 
 ---
 
