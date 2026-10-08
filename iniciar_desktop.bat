@@ -5,6 +5,13 @@ echo   FAZENDA RECREIO DO MORRO - CHAPADA DIAMANTINA
 echo   Modo Aplicativo Desktop (Janela Nativa para Windows)
 echo ===================================================================
 echo.
+:: Se o executavel nativo .exe existir, abre diretamente
+if exist "%~dp0Fazenda Recreio do Morro.exe" (
+    echo Abrindo Fazenda Recreio do Morro.exe...
+    start "" "%~dp0Fazenda Recreio do Morro.exe"
+    exit
+)
+
 cd /d "%~dp0cafe-gestao"
 
 if not exist node_modules (
