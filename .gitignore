@@ -29,3 +29,9 @@ pnpm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Desktop executables and build artifacts
+dist-desktop/
+*.exe
+*.msi
+
