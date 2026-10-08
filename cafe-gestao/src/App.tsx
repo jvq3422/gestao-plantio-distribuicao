@@ -104,9 +104,15 @@ export function App() {
     setSaidas(StorageService.getSaidas());
   };
 
-  const handleResetData = () => {
-    if (window.confirm('Deseja zerar e limpar todos os dados cadastrados no sistema?')) {
+  const handleResetData = async () => {
+    if (window.confirm('Deseja zerar e limpar todos os dados cadastrados no sistema e na nuvem?')) {
       StorageService.clearAllData();
+      loadAllData();
+      try {
+        await SyncService.clearCloudData();
+      } catch (err) {
+        console.warn('Erro ao limpar dados na nuvem:', err);
+      }
       loadAllData();
     }
   };
@@ -134,16 +140,35 @@ export function App() {
     setCalcPlotId(newPlot.id);
   };
 
+  const handleDeletePlot = (plotId: string, plotNome: string) => {
+    StorageService.deletePlot(plotId);
+    loadAllData();
+    if (calcPlotId === plotId) {
+      const remaining = plots.filter((p) => p.id !== plotId);
+      setCalcPlotId(remaining[0]?.id || '');
+    }
+  };
+
   const handleSaveAnalysis = (newAnalysis: SoilAnalysis) => {
     const updated = [newAnalysis, ...analyses];
     setAnalyses(updated);
     StorageService.saveAnalyses(updated);
   };
 
+  const handleDeleteAnalysis = (analysisId: string) => {
+    StorageService.deleteAnalysis(analysisId);
+    loadAllData();
+  };
+
   const handleSaveHarvest = (newHarvest: HarvestRecord) => {
     const updated = [newHarvest, ...harvests];
     setHarvests(updated);
     StorageService.saveHarvests(updated);
+  };
+
+  const handleDeleteHarvest = (harvestId: string) => {
+    StorageService.deleteHarvest(harvestId);
+    loadAllData();
   };
 
   const currentWorkOrderPlot = activeWorkOrderPlan
@@ -179,6 +204,7 @@ export function App() {
                 plots={plots}
                 onSelectPlotForCalc={handleSelectPlotForCalc}
                 onOpenNewPlotModal={() => setIsPlotModalOpen(true)}
+                onDeletePlot={handleDeletePlot}
               />
             )}
 
@@ -187,6 +213,7 @@ export function App() {
                 plots={plots}
                 analyses={analyses}
                 onOpenNewAnalysisModal={handleOpenAnalysisModal}
+                onDeleteAnalysis={handleDeleteAnalysis}
               />
             )}
 
@@ -206,6 +233,7 @@ export function App() {
                 harvests={harvests}
                 analyses={analyses}
                 onOpenNewHarvestModal={handleOpenHarvestModal}
+                onDeleteHarvest={handleDeleteHarvest}
               />
             )}
 

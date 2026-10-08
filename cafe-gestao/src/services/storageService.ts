@@ -47,9 +47,52 @@ export class StorageService {
   private static KEY_SAIDAS = 'recreio_clean_saidas_v1';
 
   private static syncHook: ((collection: string, entity: any) => void) | null = null;
+  private static deleteHook: ((collection: string, id: string) => void) | null = null;
 
-  static setSyncHook(hook: ((collection: string, entity: any) => void) | null): void {
+  static setSyncHook(
+    hook: ((collection: string, entity: any) => void) | null,
+    delHook?: ((collection: string, id: string) => void) | null
+  ): void {
     this.syncHook = hook;
+    if (delHook !== undefined) {
+      this.deleteHook = delHook;
+    }
+  }
+
+  static deletePlot(id: string): void {
+    const plots = this.getPlots().filter((p) => p.id !== id);
+    this.savePlots(plots, true);
+    this.deleteHook?.('recreio_plots', id);
+  }
+
+  static deleteAnalysis(id: string): void {
+    const analyses = this.getAnalyses().filter((a) => a.id !== id);
+    this.saveAnalyses(analyses, true);
+    this.deleteHook?.('recreio_analyses', id);
+  }
+
+  static deleteHarvest(id: string): void {
+    const harvests = this.getHarvests().filter((h) => h.id !== id);
+    this.saveHarvests(harvests, true);
+    this.deleteHook?.('recreio_harvests', id);
+  }
+
+  static deleteProduto(id: string): void {
+    const produtos = this.getProdutos().filter((p) => p.id !== id);
+    this.saveProdutos(produtos, true);
+    this.deleteHook?.('recreio_produtos', id);
+  }
+
+  static deletePdv(id: string): void {
+    const pdvs = this.getPontosVenda().filter((p) => p.id !== id);
+    this.savePontosVenda(pdvs, true);
+    this.deleteHook?.('recreio_pdvs', id);
+  }
+
+  static deleteSaida(id: string): void {
+    const saidas = this.getSaidas().filter((s) => s.id !== id);
+    this.saveSaidas(saidas, true);
+    this.deleteHook?.('recreio_saidas', id);
   }
 
   // --- AGRONOMIA & PARÂMETROS DINÂMICOS ---
@@ -294,15 +337,15 @@ export class StorageService {
   }
 
   static clearAllData(): void {
-    this.savePlots([]);
-    this.saveAnalyses([]);
-    this.saveHarvests([]);
+    this.savePlots([], true);
+    this.saveAnalyses([], true);
+    this.saveHarvests([], true);
     this.saveParametros(DEFAULT_PARAMETROS);
     this.saveFertilizantes(CATALOGO_FERTILIZANTES);
-    this.saveProdutos([]);
-    this.savePontosVenda([]);
-    this.savePrecosNegociados([]);
-    this.saveSaidas([]);
+    this.saveProdutos([], true);
+    this.savePontosVenda([], true);
+    this.savePrecosNegociados([], true);
+    this.saveSaidas([], true);
     localStorage.removeItem(this.KEY_PLANS);
 
     // Limpar quaisquer chaves legadas de versões anteriores

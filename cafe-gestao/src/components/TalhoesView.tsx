@@ -1,17 +1,19 @@
 import React from 'react';
 import { Plot } from '../types';
-import { Plus, Mountain, Sun, Compass, Ruler, ShieldCheck, ArrowRight, Award } from 'lucide-react';
+import { Plus, Mountain, Sun, Compass, Ruler, ShieldCheck, ArrowRight, Award, Trash2 } from 'lucide-react';
 
 interface TalhoesViewProps {
   plots: Plot[];
   onSelectPlotForCalc: (plotId: string) => void;
   onOpenNewPlotModal: () => void;
+  onDeletePlot?: (plotId: string, plotNome: string) => void;
 }
 
 export const TalhoesView: React.FC<TalhoesViewProps> = ({
   plots,
   onSelectPlotForCalc,
   onOpenNewPlotModal,
+  onDeletePlot,
 }) => {
   return (
     <div className="space-y-6">
@@ -95,9 +97,23 @@ export const TalhoesView: React.FC<TalhoesViewProps> = ({
                         {plot.nome}
                       </h3>
                     </div>
-                    <span className="text-xs font-black text-recreio-espresso-950 bg-[#faf6ef] px-2.5 py-1 rounded-lg border border-recreio-gold-200">
-                      {plot.areaHa.toFixed(1)} ha
-                    </span>
+                    <div className="flex items-center space-x-1.5">
+                      <span className="text-xs font-black text-recreio-espresso-950 bg-[#faf6ef] px-2.5 py-1 rounded-lg border border-recreio-gold-200">
+                        {plot.areaHa.toFixed(1)} ha
+                      </span>
+                      {onDeletePlot && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeletePlot(plot.id, plot.nome);
+                          }}
+                          title={`Excluir talhão ${plot.nome}`}
+                          className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-200"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Terroir Badges */}

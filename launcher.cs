@@ -48,7 +48,7 @@ namespace RecreioDoMorro
                 catch { listener = null; }
             }
 
-            string targetUrl = (listener != null) ? "http://127.0.0.1:" + port + "/" : "https://recreiodomorro-f7e1a.web.app/";
+            string targetUrl = (listener != null) ? "http://127.0.0.1:" + port + "/" : "https://recreiodomorro.web.app/";
 
             string edgePath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
             if (!File.Exists(edgePath))

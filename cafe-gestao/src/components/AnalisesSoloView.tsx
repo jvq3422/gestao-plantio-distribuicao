@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { SoilAnalysis, Plot } from '../types';
 import { calcularIndicesSolo } from '../services/agronomyEngine';
-import { Plus, Beaker, AlertTriangle, CheckCircle2, ChevronRight, Activity, Calendar } from 'lucide-react';
+import { Plus, Beaker, AlertTriangle, CheckCircle2, ChevronRight, Activity, Calendar, Trash2 } from 'lucide-react';
 
 interface AnalisesSoloViewProps {
   plots: Plot[];
   analyses: SoilAnalysis[];
   onOpenNewAnalysisModal: (preselectedPlotId?: string) => void;
+  onDeleteAnalysis?: (analysisId: string) => void;
 }
 
 export const AnalisesSoloView: React.FC<AnalisesSoloViewProps> = ({
   plots,
   analyses,
   onOpenNewAnalysisModal,
+  onDeleteAnalysis,
 }) => {
   const [selectedPlotId, setSelectedPlotId] = useState<string>(plots[0]?.id || '');
 
@@ -125,24 +127,35 @@ export const AnalisesSoloView: React.FC<AnalisesSoloViewProps> = ({
                     </div>
                   </div>
 
-                  {/* V% or m% highlight */}
-                  <div className="text-right">
-                    <span className="text-[10px] uppercase font-bold text-stone-400 block">
-                      {isSub ? 'Toxidez Al (m%)' : 'Saturação Bases (V%)'}
-                    </span>
-                    <span
-                      className={`text-xl font-extrabold ${
-                        isSub
-                          ? m > 20
-                            ? 'text-rose-600'
-                            : 'text-folha-600'
-                          : isVOk
-                          ? 'text-folha-600'
-                          : 'text-amber-600'
-                      }`}
-                    >
-                      {isSub ? `${m.toFixed(1)}%` : `${v.toFixed(1)}%`}
-                    </span>
+                  {/* V% or m% highlight & Delete */}
+                  <div className="flex items-center space-x-2.5">
+                    <div className="text-right">
+                      <span className="text-[10px] uppercase font-bold text-stone-400 block">
+                        {isSub ? 'Toxidez Al (m%)' : 'Saturação Bases (V%)'}
+                      </span>
+                      <span
+                        className={`text-xl font-extrabold ${
+                          isSub
+                            ? m > 20
+                              ? 'text-rose-600'
+                              : 'text-folha-600'
+                            : isVOk
+                            ? 'text-folha-600'
+                            : 'text-amber-600'
+                        }`}
+                      >
+                        {isSub ? `${m.toFixed(1)}%` : `${v.toFixed(1)}%`}
+                      </span>
+                    </div>
+                    {onDeleteAnalysis && (
+                      <button
+                        onClick={() => onDeleteAnalysis(item.id)}
+                        title="Excluir este laudo"
+                        className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-200"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
 

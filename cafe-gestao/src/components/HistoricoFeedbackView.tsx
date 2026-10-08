@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Plot, HarvestRecord, SoilAnalysis } from '../types';
 import { calcularExportacaoColheita, analisarHistoricoTalhao } from '../services/historyFeedbackEngine';
-import { Plus, Award, Scale, Sparkles } from 'lucide-react';
+import { Plus, Award, Scale, Sparkles, Trash2 } from 'lucide-react';
 
 interface HistoricoFeedbackViewProps {
   plots: Plot[];
   harvests: HarvestRecord[];
   analyses: SoilAnalysis[];
   onOpenNewHarvestModal: (preselectedPlotId?: string) => void;
+  onDeleteHarvest?: (harvestId: string) => void;
 }
 
 export const HistoricoFeedbackView: React.FC<HistoricoFeedbackViewProps> = ({
@@ -15,6 +16,7 @@ export const HistoricoFeedbackView: React.FC<HistoricoFeedbackViewProps> = ({
   harvests,
   analyses,
   onOpenNewHarvestModal,
+  onDeleteHarvest,
 }) => {
   const [selectedPlotId, setSelectedPlotId] = useState<string>(plots[0]?.id || '');
 
@@ -178,14 +180,25 @@ export const HistoricoFeedbackView: React.FC<HistoricoFeedbackViewProps> = ({
                   )}
                 </div>
 
-                <div className="text-right">
-                  <span className="text-xs text-stone-400 uppercase font-bold block">Produtividade Real</span>
-                  <span className="text-lg font-black text-recreio-gold-800 font-mono">
-                    {harv.produtividadeSacasHa} scs/ha
-                  </span>
-                  <span className="text-[10px] text-stone-400 block font-mono">
-                    ({harv.sacasTotais} scs no talhão)
-                  </span>
+                <div className="flex items-center space-x-2.5">
+                  <div className="text-right">
+                    <span className="text-xs text-stone-400 uppercase font-bold block">Produtividade Real</span>
+                    <span className="text-lg font-black text-recreio-gold-800 font-mono">
+                      {harv.produtividadeSacasHa} scs/ha
+                    </span>
+                    <span className="text-[10px] text-stone-400 block font-mono">
+                      ({harv.sacasTotais} scs no talhão)
+                    </span>
+                  </div>
+                  {onDeleteHarvest && (
+                    <button
+                      onClick={() => onDeleteHarvest(harv.id)}
+                      title="Excluir este registro de colheita"
+                      className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-200"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
 

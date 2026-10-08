@@ -25,6 +25,7 @@ import {
   initializeFirebase,
 } from '../services/firebaseConfig';
 import { SyncService, SyncStatus } from '../services/syncService';
+import { StorageService } from '../services/storageService';
 
 interface NuvemSyncModalProps {
   isOpen: boolean;
@@ -131,6 +132,27 @@ export const NuvemSyncModal: React.FC<NuvemSyncModalProps> = ({
     });
     if (result.success && onSyncCompleted) {
       onSyncCompleted();
+    }
+  };
+
+  const handleClearCloudAndLocal = async () => {
+    if (
+      window.confirm(
+        'Atenção: Esta ação apagará permanentemente todos os dados no Firebase Firestore (Nuvem) e neste dispositivo. Deseja continuar?'
+      )
+    ) {
+      setIsUploading(true);
+      setFeedbackMsg(null);
+      StorageService.clearAllData();
+      const result = await SyncService.clearCloudData();
+      setIsUploading(false);
+      setFeedbackMsg({
+        type: result.success ? 'success' : 'error',
+        text: result.message,
+      });
+      if (onSyncCompleted) {
+        onSyncCompleted();
+      }
     }
   };
 
@@ -328,6 +350,16 @@ export const NuvemSyncModal: React.FC<NuvemSyncModalProps> = ({
                     ? 'Sincronizando com a Nuvem...'
                     : 'Enviar / Sincronizar Todos os Dados Locais para a Nuvem'}
                 </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleClearCloudAndLocal}
+                disabled={isUploading}
+                className="w-full inline-flex items-center justify-center space-x-2 bg-rose-50 hover:bg-rose-100 disabled:opacity-50 text-rose-700 font-bold py-2 px-4 rounded-xl border border-rose-200 transition-all min-h-[40px] text-xs"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                <span>Zerar Todos os Dados Cadastrados (Local & Nuvem)</span>
               </button>
             </div>
           </div>

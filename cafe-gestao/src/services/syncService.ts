@@ -61,9 +61,14 @@ export class SyncService {
       return false;
     }
 
-    StorageService.setSyncHook((col, ent) => {
-      this.pushEntity(col, ent);
-    });
+    StorageService.setSyncHook(
+      (col, ent) => {
+        this.pushEntity(col, ent);
+      },
+      (col, id) => {
+        this.deleteEntity(col, id);
+      }
+    );
 
     // Autenticação opcional em segundo plano (não bloqueante para leitura/escrita)
     ensureAuthenticated().catch(() => {});
@@ -87,49 +92,49 @@ export class SyncService {
     ]).then(([plotsRes, analysesRes, harvestsRes, produtosRes, pdvsRes, precosRes, saidasRes]) => {
       let hasUpdates = false;
 
-      if (plotsRes.status === 'fulfilled' && !plotsRes.value.empty) {
+      if (plotsRes.status === 'fulfilled') {
         const remotePlots: Plot[] = [];
         plotsRes.value.forEach((d) => remotePlots.push(d.data() as Plot));
         StorageService.savePlots(remotePlots, true);
         hasUpdates = true;
       }
 
-      if (analysesRes.status === 'fulfilled' && !analysesRes.value.empty) {
+      if (analysesRes.status === 'fulfilled') {
         const remoteAnalyses: SoilAnalysis[] = [];
         analysesRes.value.forEach((d) => remoteAnalyses.push(d.data() as SoilAnalysis));
         StorageService.saveAnalyses(remoteAnalyses, true);
         hasUpdates = true;
       }
 
-      if (harvestsRes.status === 'fulfilled' && !harvestsRes.value.empty) {
+      if (harvestsRes.status === 'fulfilled') {
         const remoteHarvests: HarvestRecord[] = [];
         harvestsRes.value.forEach((d) => remoteHarvests.push(d.data() as HarvestRecord));
         StorageService.saveHarvests(remoteHarvests, true);
         hasUpdates = true;
       }
 
-      if (produtosRes.status === 'fulfilled' && !produtosRes.value.empty) {
+      if (produtosRes.status === 'fulfilled') {
         const remoteProdutos: Produto[] = [];
         produtosRes.value.forEach((d) => remoteProdutos.push(d.data() as Produto));
         StorageService.saveProdutos(remoteProdutos, true);
         hasUpdates = true;
       }
 
-      if (pdvsRes.status === 'fulfilled' && !pdvsRes.value.empty) {
+      if (pdvsRes.status === 'fulfilled') {
         const remotePdvs: PontoVenda[] = [];
         pdvsRes.value.forEach((d) => remotePdvs.push(d.data() as PontoVenda));
         StorageService.savePontosVenda(remotePdvs, true);
         hasUpdates = true;
       }
 
-      if (precosRes.status === 'fulfilled' && !precosRes.value.empty) {
+      if (precosRes.status === 'fulfilled') {
         const remotePrecos: PrecoNegociado[] = [];
         precosRes.value.forEach((d) => remotePrecos.push(d.data() as PrecoNegociado));
         StorageService.savePrecosNegociados(remotePrecos, true);
         hasUpdates = true;
       }
 
-      if (saidasRes.status === 'fulfilled' && !saidasRes.value.empty) {
+      if (saidasRes.status === 'fulfilled') {
         const remoteSaidas: SaidaVenda[] = [];
         saidasRes.value.forEach((d) => remoteSaidas.push(d.data() as SaidaVenda));
         StorageService.saveSaidas(remoteSaidas, true);
@@ -147,18 +152,10 @@ export class SyncService {
     const unsubPlots = onSnapshot(
       collection(db, 'recreio_plots'),
       (snapshot) => {
-        if (!snapshot.empty) {
-          const remotePlots: Plot[] = [];
-          snapshot.forEach((d) => remotePlots.push(d.data() as Plot));
-          StorageService.savePlots(remotePlots, true);
-          onDataUpdated();
-        } else {
-          // Se nuvem estiver vazia e houver dados locais, sobe os dados locais automaticamente
-          const local = StorageService.getPlots();
-          if (local.length > 0) {
-            local.forEach((p) => this.pushEntity('recreio_plots', p));
-          }
-        }
+        const remotePlots: Plot[] = [];
+        snapshot.forEach((d) => remotePlots.push(d.data() as Plot));
+        StorageService.savePlots(remotePlots, true);
+        onDataUpdated();
       },
       (err) => console.warn('[Sync] Erro snapshot plots:', err)
     );
@@ -167,17 +164,10 @@ export class SyncService {
     const unsubAnalyses = onSnapshot(
       collection(db, 'recreio_analyses'),
       (snapshot) => {
-        if (!snapshot.empty) {
-          const remoteAnalyses: SoilAnalysis[] = [];
-          snapshot.forEach((d) => remoteAnalyses.push(d.data() as SoilAnalysis));
-          StorageService.saveAnalyses(remoteAnalyses, true);
-          onDataUpdated();
-        } else {
-          const local = StorageService.getAnalyses();
-          if (local.length > 0) {
-            local.forEach((a) => this.pushEntity('recreio_analyses', a));
-          }
-        }
+        const remoteAnalyses: SoilAnalysis[] = [];
+        snapshot.forEach((d) => remoteAnalyses.push(d.data() as SoilAnalysis));
+        StorageService.saveAnalyses(remoteAnalyses, true);
+        onDataUpdated();
       },
       (err) => console.warn('[Sync] Erro snapshot analyses:', err)
     );
@@ -186,17 +176,10 @@ export class SyncService {
     const unsubHarvests = onSnapshot(
       collection(db, 'recreio_harvests'),
       (snapshot) => {
-        if (!snapshot.empty) {
-          const remoteHarvests: HarvestRecord[] = [];
-          snapshot.forEach((d) => remoteHarvests.push(d.data() as HarvestRecord));
-          StorageService.saveHarvests(remoteHarvests, true);
-          onDataUpdated();
-        } else {
-          const local = StorageService.getHarvests();
-          if (local.length > 0) {
-            local.forEach((h) => this.pushEntity('recreio_harvests', h));
-          }
-        }
+        const remoteHarvests: HarvestRecord[] = [];
+        snapshot.forEach((d) => remoteHarvests.push(d.data() as HarvestRecord));
+        StorageService.saveHarvests(remoteHarvests, true);
+        onDataUpdated();
       },
       (err) => console.warn('[Sync] Erro snapshot harvests:', err)
     );
@@ -205,17 +188,10 @@ export class SyncService {
     const unsubProdutos = onSnapshot(
       collection(db, 'recreio_produtos'),
       (snapshot) => {
-        if (!snapshot.empty) {
-          const remoteProdutos: Produto[] = [];
-          snapshot.forEach((d) => remoteProdutos.push(d.data() as Produto));
-          StorageService.saveProdutos(remoteProdutos, true);
-          onDataUpdated();
-        } else {
-          const local = StorageService.getProdutos();
-          if (local.length > 0) {
-            local.forEach((p) => this.pushEntity('recreio_produtos', p));
-          }
-        }
+        const remoteProdutos: Produto[] = [];
+        snapshot.forEach((d) => remoteProdutos.push(d.data() as Produto));
+        StorageService.saveProdutos(remoteProdutos, true);
+        onDataUpdated();
       },
       (err) => console.warn('[Sync] Erro snapshot produtos:', err)
     );
@@ -224,17 +200,10 @@ export class SyncService {
     const unsubPdvs = onSnapshot(
       collection(db, 'recreio_pdvs'),
       (snapshot) => {
-        if (!snapshot.empty) {
-          const remotePdvs: PontoVenda[] = [];
-          snapshot.forEach((d) => remotePdvs.push(d.data() as PontoVenda));
-          StorageService.savePontosVenda(remotePdvs, true);
-          onDataUpdated();
-        } else {
-          const local = StorageService.getPontosVenda();
-          if (local.length > 0) {
-            local.forEach((p) => this.pushEntity('recreio_pdvs', p));
-          }
-        }
+        const remotePdvs: PontoVenda[] = [];
+        snapshot.forEach((d) => remotePdvs.push(d.data() as PontoVenda));
+        StorageService.savePontosVenda(remotePdvs, true);
+        onDataUpdated();
       },
       (err) => console.warn('[Sync] Erro snapshot pdvs:', err)
     );
@@ -243,12 +212,10 @@ export class SyncService {
     const unsubPrecos = onSnapshot(
       collection(db, 'recreio_precos'),
       (snapshot) => {
-        if (!snapshot.empty) {
-          const remotePrecos: PrecoNegociado[] = [];
-          snapshot.forEach((d) => remotePrecos.push(d.data() as PrecoNegociado));
-          StorageService.savePrecosNegociados(remotePrecos, true);
-          onDataUpdated();
-        }
+        const remotePrecos: PrecoNegociado[] = [];
+        snapshot.forEach((d) => remotePrecos.push(d.data() as PrecoNegociado));
+        StorageService.savePrecosNegociados(remotePrecos, true);
+        onDataUpdated();
       },
       (err) => console.warn('[Sync] Erro snapshot precos:', err)
     );
@@ -257,17 +224,10 @@ export class SyncService {
     const unsubSaidas = onSnapshot(
       collection(db, 'recreio_saidas'),
       (snapshot) => {
-        if (!snapshot.empty) {
-          const remoteSaidas: SaidaVenda[] = [];
-          snapshot.forEach((d) => remoteSaidas.push(d.data() as SaidaVenda));
-          StorageService.saveSaidas(remoteSaidas, true);
-          onDataUpdated();
-        } else {
-          const local = StorageService.getSaidas();
-          if (local.length > 0) {
-            local.forEach((s) => this.pushEntity('recreio_saidas', s));
-          }
-        }
+        const remoteSaidas: SaidaVenda[] = [];
+        snapshot.forEach((d) => remoteSaidas.push(d.data() as SaidaVenda));
+        StorageService.saveSaidas(remoteSaidas, true);
+        onDataUpdated();
       },
       (err) => console.warn('[Sync] Erro snapshot saidas:', err)
     );
@@ -285,6 +245,8 @@ export class SyncService {
         window.removeEventListener('offline', handleOffline);
       },
     ];
+
+    return true;
 
     return true;
   }
@@ -403,4 +365,53 @@ export class SyncService {
       };
     }
   }
+
+  /**
+   * Remove todos os dados de todas as coleções na nuvem (Firestore)
+   */
+  static async clearCloudData(): Promise<{ success: boolean; message: string }> {
+    const { db, isReady } = initializeFirebase();
+    if (!isReady || !db) {
+      return { success: false, message: 'Firebase não está configurado.' };
+    }
+
+    const collectionsToClear = [
+      'recreio_plots',
+      'recreio_analyses',
+      'recreio_harvests',
+      'recreio_produtos',
+      'recreio_pdvs',
+      'recreio_precos',
+      'recreio_saidas',
+    ];
+
+    try {
+      this.notifyStatus('syncing');
+
+      for (const colName of collectionsToClear) {
+        const snap = await getDocs(collection(db, colName));
+        if (!snap.empty) {
+          const batch = writeBatch(db);
+          snap.forEach((docSnap) => {
+            batch.delete(docSnap.ref);
+          });
+          await batch.commit();
+        }
+      }
+
+      this.notifyStatus(navigator.onLine ? 'online' : 'offline_cache');
+      return {
+        success: true,
+        message: 'Todos os dados foram completamente removidos da nuvem!',
+      };
+    } catch (err: any) {
+      this.notifyStatus(navigator.onLine ? 'online' : 'offline_cache');
+      console.error('[SyncService] Erro ao limpar nuvem:', err);
+      return {
+        success: false,
+        message: `Falha ao limpar nuvem: ${err?.message || 'Erro de conexão'}`,
+      };
+    }
+  }
 }
+
