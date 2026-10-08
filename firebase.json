@@ -4,7 +4,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "site": "recreiodomorro-f7e1a",
+    "site": "recreiodomorro",
     "public": "cafe-gestao/dist",
     "ignore": [
       "firebase.json",
