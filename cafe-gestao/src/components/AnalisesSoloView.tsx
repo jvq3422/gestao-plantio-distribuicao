@@ -52,7 +52,8 @@ export const AnalisesSoloView: React.FC<AnalisesSoloViewProps> = ({
 
           <button
             onClick={() => onOpenNewAnalysisModal(selectedPlotId)}
-            className="inline-flex items-center space-x-1.5 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white text-xs sm:text-sm font-bold px-3.5 py-2 rounded-xl transition-colors shadow-sm"
+            style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
+            className="inline-flex items-center space-x-1.5 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white text-xs sm:text-sm font-bold px-3.5 py-2 rounded-xl transition-colors shadow-sm active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Inserir Laudo</span>

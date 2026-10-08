@@ -62,6 +62,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="hidden md:flex items-center bg-[#f5efe4] p-1.5 rounded-2xl border border-recreio-gold-200 shadow-inner">
             <button
               onClick={() => setAmbiente('adubacao')}
+              style={ambiente === 'adubacao' ? { backgroundColor: '#964f0b', color: '#ffffff' } : {}}
               className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                 ambiente === 'adubacao'
                   ? 'bg-recreio-gold-700 text-white shadow-md'
@@ -73,6 +74,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={() => setAmbiente('distribuicao')}
+              style={ambiente === 'distribuicao' ? { backgroundColor: '#231914', color: '#ffffff' } : {}}
               className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                 ambiente === 'distribuicao'
                   ? 'bg-recreio-espresso-950 text-white shadow-md'
@@ -141,9 +143,10 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile Module Switcher (Full-width segmented control for thumb access) */}
         <div className="md:hidden pb-2.5 pt-1">
-          <div className="grid grid-cols-2 gap-1.5 bg-[#f5efe4] p-1 rounded-2xl border border-recreio-gold-200 shadow-inner">
+          <div className="grid grid-cols-2 gap-1.5 bg-[#f5efe4] p-1.5 rounded-2xl border border-stone-300 shadow-inner">
             <button
               onClick={() => setAmbiente('adubacao')}
+              style={ambiente === 'adubacao' ? { backgroundColor: '#964f0b', color: '#ffffff' } : { color: '#44403c' }}
               className={`flex items-center justify-center space-x-2 py-2.5 px-2 rounded-xl text-xs font-bold transition-all min-h-[42px] ${
                 ambiente === 'adubacao'
                   ? 'bg-recreio-gold-700 text-white shadow-md'
@@ -155,6 +158,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={() => setAmbiente('distribuicao')}
+              style={ambiente === 'distribuicao' ? { backgroundColor: '#231914', color: '#ffffff' } : { color: '#44403c' }}
               className={`flex items-center justify-center space-x-2 py-2.5 px-2 rounded-xl text-xs font-bold transition-all min-h-[42px] ${
                 ambiente === 'distribuicao'
                   ? 'bg-recreio-espresso-950 text-white shadow-md'
@@ -169,7 +173,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Sub-navigation Tabs (Somente para o Módulo de Adubação) */}
         {ambiente === 'adubacao' && (
-          <nav className="flex space-x-1 sm:space-x-2 overflow-x-auto py-2 scrollbar-none no-scrollbar touch-scroll border-t border-stone-100 -mx-3 px-3 sm:mx-0 sm:px-0">
+          <nav className="flex space-x-1.5 sm:space-x-2 overflow-x-auto py-2 scrollbar-none no-scrollbar touch-scroll border-t border-stone-200 -mx-3 px-3 sm:mx-0 sm:px-0">
             {tabsAdubacao.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -177,10 +181,11 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all whitespace-nowrap min-h-[38px] ${
+                  style={isActive ? { backgroundColor: '#faeed9', color: '#643410', borderColor: '#ecc47b' } : {}}
+                  className={`flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all whitespace-nowrap min-h-[38px] shrink-0 border ${
                     isActive
-                      ? 'bg-recreio-gold-50 text-recreio-gold-900 border border-recreio-gold-300 shadow-xs'
-                      : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900'
+                      ? 'bg-recreio-gold-100 text-recreio-gold-900 border-recreio-gold-300 shadow-xs'
+                      : 'bg-white text-stone-600 hover:bg-stone-100 hover:text-stone-900 border-transparent'
                   }`}
                 >
                   <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isActive ? 'text-recreio-gold-700' : 'text-stone-400'}`} />

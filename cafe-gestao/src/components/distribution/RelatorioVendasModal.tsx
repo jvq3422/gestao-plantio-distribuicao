@@ -89,9 +89,10 @@ export const RelatorioVendasModal: React.FC<RelatorioVendasModalProps> = ({
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center space-x-1.5 bg-recreio-espresso-950 hover:bg-black text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm transition-all"
+              style={{ backgroundColor: '#231914', color: '#ffffff' }}
+              className="inline-flex items-center space-x-1.5 bg-recreio-espresso-950 hover:bg-black text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm transition-all active:scale-95"
             >
-              <Printer className="w-4 h-4 text-recreio-gold-400" />
+              <Printer className="w-4 h-4 text-[#e0a442]" />
               <span>Imprimir / Salvar em PDF</span>
             </button>
 

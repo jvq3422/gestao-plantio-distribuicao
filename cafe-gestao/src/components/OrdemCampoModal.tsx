@@ -46,7 +46,8 @@ export const OrdemCampoModal: React.FC<OrdemCampoModalProps> = ({ plan, plot, on
           <div className="flex flex-wrap items-center gap-2 self-end sm:self-auto">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center space-x-1.5 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl transition-all shadow-sm min-h-[40px]"
+              style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
+              className="inline-flex items-center space-x-1.5 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl transition-all shadow-sm min-h-[40px] active:scale-95"
             >
               <Printer className="w-4 h-4" />
               <span>Imprimir / PDF</span>

@@ -56,7 +56,8 @@ export const LancamentoSaidasTab: React.FC<LancamentoSaidasTabProps> = ({
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
           <button
             onClick={onOpenNovaSaidaModal}
-            className="inline-flex items-center space-x-1.5 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-md transition-all min-h-[38px]"
+            style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
+            className="inline-flex items-center space-x-1.5 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-md transition-all min-h-[38px] active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Nova Saída</span>
@@ -65,10 +66,11 @@ export const LancamentoSaidasTab: React.FC<LancamentoSaidasTabProps> = ({
           {onOpenRelatorioVendas && (
             <button
               onClick={onOpenRelatorioVendas}
-              className="inline-flex items-center space-x-1.5 bg-recreio-espresso-950 hover:bg-black text-white font-bold text-xs sm:text-sm px-3.5 py-2.5 rounded-xl shadow-md transition-all min-h-[38px]"
+              style={{ backgroundColor: '#231914', color: '#ffffff' }}
+              className="inline-flex items-center space-x-1.5 bg-recreio-espresso-950 hover:bg-black text-white font-bold text-xs sm:text-sm px-3.5 py-2.5 rounded-xl shadow-md transition-all min-h-[38px] active:scale-95"
               title="Abrir Relatório Oficial para Impressão e PDF"
             >
-              <FileText className="w-4 h-4 text-recreio-gold-400" />
+              <FileText className="w-4 h-4 text-[#e0a442]" />
               <span>Relatório PDF</span>
             </button>
           )}

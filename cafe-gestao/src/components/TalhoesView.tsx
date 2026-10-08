@@ -16,25 +16,35 @@ export const TalhoesView: React.FC<TalhoesViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-recreio-espresso-950 via-recreio-espresso-900 to-[#3d2012] rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden border border-recreio-gold-900/40">
+      <div
+        className="rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden border border-[#643410]/50"
+        style={{
+          backgroundColor: '#231914',
+          backgroundImage: 'linear-gradient(135deg, #231914 0%, #3c3029 60%, #3d2012 100%)',
+        }}
+      >
         <div className="relative z-10 max-w-2xl">
           <div className="flex items-center space-x-2 mb-3">
-            <span className="bg-recreio-gold-500/20 text-recreio-gold-300 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center space-x-1 border border-recreio-gold-400/30">
-              <Award className="w-3.5 h-3.5 text-recreio-gold-400" />
+            <span
+              className="text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center space-x-1 border"
+              style={{ backgroundColor: 'rgba(200, 125, 19, 0.25)', color: '#ecc47b', borderColor: 'rgba(236, 196, 123, 0.4)' }}
+            >
+              <Award className="w-3.5 h-3.5 text-[#e0a442]" />
               <span>Terroir Chapada Diamantina • Alta Altitude</span>
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-playfair font-serif-brand font-bold tracking-wide">
+          <h1 className="text-2xl sm:text-3xl font-playfair font-serif-brand font-bold tracking-wide text-white">
             Talhões & Microclimas da Fazenda
           </h1>
-          <p className="mt-2 text-stone-300 text-xs sm:text-sm leading-relaxed">
+          <p className="mt-2 text-stone-200 text-xs sm:text-sm leading-relaxed">
             Altitudes de 1.190m a 1.350m com amplitudes térmicas acentuadas. O manejo nutricional individualizado por talhão é o segredo para notas florais de jasmim, acidez fosfórica cristalina e corpo sedoso.
           </p>
         </div>
         <div className="mt-6 flex flex-wrap gap-4 relative z-10">
           <button
             onClick={onOpenNewPlotModal}
-            className="inline-flex items-center space-x-2 bg-recreio-gold-600 hover:bg-recreio-gold-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-md transition-all text-xs sm:text-sm"
+            style={{ backgroundColor: '#b4670c', color: '#ffffff' }}
+            className="inline-flex items-center space-x-2 bg-recreio-gold-600 hover:bg-recreio-gold-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-md transition-all text-xs sm:text-sm active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Cadastrar Novo Talhão</span>
@@ -56,7 +66,8 @@ export const TalhoesView: React.FC<TalhoesViewProps> = ({
           </div>
           <button
             onClick={onOpenNewPlotModal}
-            className="inline-flex items-center space-x-2 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-md transition-all"
+            style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
+            className="inline-flex items-center space-x-2 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-md transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Cadastrar Primeiro Talhão</span>
@@ -133,6 +144,7 @@ export const TalhoesView: React.FC<TalhoesViewProps> = ({
                   </span>
                   <button
                     onClick={() => onSelectPlotForCalc(plot.id)}
+                    style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
                     className="inline-flex items-center space-x-1.5 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-colors shadow-sm"
                   >
                     <span>Calcular Nutrição</span>

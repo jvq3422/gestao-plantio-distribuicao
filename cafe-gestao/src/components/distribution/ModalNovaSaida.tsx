@@ -406,7 +406,8 @@ export const ModalNovaSaida: React.FC<ModalNovaSaidaProps> = ({
               <button
                 type="submit"
                 disabled={itens.length === 0}
-                className="px-5 py-2.5 rounded-xl bg-recreio-gold-700 hover:bg-recreio-gold-800 disabled:opacity-50 text-white font-bold transition-all shadow-md flex items-center space-x-1.5 min-h-[44px]"
+                style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
+                className="px-5 py-2.5 rounded-xl bg-recreio-gold-700 hover:bg-recreio-gold-800 disabled:opacity-50 text-white font-bold transition-all shadow-md flex items-center space-x-1.5 min-h-[44px] active:scale-95"
               >
                 <DollarSign className="w-4 h-4" />
                 <span>Confirmar Saída & Receita</span>

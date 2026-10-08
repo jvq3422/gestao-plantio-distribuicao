@@ -148,10 +148,11 @@ export const CalculadoraNutricaoView: React.FC<CalculadoraNutricaoViewProps> = (
               <>
                 <button
                   onClick={() => onViewWorkOrder(planoAtual)}
-                  className="inline-flex items-center space-x-1.5 bg-recreio-espresso-950 hover:bg-black text-white text-xs sm:text-sm font-bold px-3.5 py-2 rounded-xl shadow-md transition-all min-h-[38px]"
+                  style={{ backgroundColor: '#231914', color: '#ffffff' }}
+                  className="inline-flex items-center space-x-1.5 bg-recreio-espresso-950 hover:bg-black text-white text-xs sm:text-sm font-bold px-3.5 py-2 rounded-xl shadow-md transition-all min-h-[38px] active:scale-95"
                   title="Visualizar e Imprimir Ficha de Campo em PDF"
                 >
-                  <FileText className="w-4 h-4 text-recreio-gold-400" />
+                  <FileText className="w-4 h-4 text-[#e0a442]" />
                   <span>Ficha PDF</span>
                 </button>
 
@@ -395,8 +396,10 @@ export const CalculadoraNutricaoView: React.FC<CalculadoraNutricaoViewProps> = (
       ) : (
         planoAtual && (
           <div className="space-y-6">
-            {/* Retroalimentação Histórica Badge */}
-            <div className="bg-recreio-espresso-950 text-white rounded-2xl p-5 shadow-sm space-y-3 border border-recreio-gold-900">
+            <div
+              style={{ backgroundColor: '#231914', color: '#ffffff' }}
+              className="bg-recreio-espresso-950 text-white rounded-2xl p-5 shadow-sm space-y-3 border border-[#643410]"
+            >
               <div className="flex items-center space-x-2 text-recreio-gold-400 text-xs font-bold uppercase tracking-wider">
                 <Sparkles className="w-4 h-4" />
                 <span>Inteligência Retroalimentada • Calibração Contínua de Safras</span>

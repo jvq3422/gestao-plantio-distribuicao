@@ -78,7 +78,8 @@ export const PontosVendaPrecosTab: React.FC<PontosVendaPrecosTabProps> = ({
 
         <button
           onClick={onOpenNewPdvModal}
-          className="inline-flex items-center space-x-2 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-sm transition-all self-start sm:self-auto"
+          style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
+          className="inline-flex items-center space-x-2 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-sm transition-all self-start sm:self-auto active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>Cadastrar Novo PDV</span>
@@ -99,7 +100,8 @@ export const PontosVendaPrecosTab: React.FC<PontosVendaPrecosTabProps> = ({
           </div>
           <button
             onClick={onOpenNewPdvModal}
-            className="inline-flex items-center space-x-2 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-md transition-all"
+            style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
+            className="inline-flex items-center space-x-2 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-md transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Cadastrar Primeiro PDV</span>
@@ -113,6 +115,7 @@ export const PontosVendaPrecosTab: React.FC<PontosVendaPrecosTabProps> = ({
               <button
                 key={pdv.id}
                 onClick={() => setSelectedPdvId(pdv.id)}
+                style={isSelected ? { backgroundColor: '#231914', color: '#ffffff', borderColor: '#964f0b' } : {}}
                 className={`p-4 rounded-2xl text-left border transition-all flex flex-col justify-between ${
                   isSelected
                     ? 'bg-recreio-espresso-950 text-white border-recreio-gold-700 shadow-md ring-2 ring-recreio-gold-500'
@@ -172,7 +175,8 @@ export const PontosVendaPrecosTab: React.FC<PontosVendaPrecosTabProps> = ({
               )}
               <button
                 onClick={handleSavePrices}
-                className="bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition-all shadow-md flex items-center space-x-1.5"
+                style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
+                className="bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition-all shadow-md flex items-center space-x-1.5 active:scale-95"
               >
                 <Check className="w-4 h-4" />
                 <span>Salvar Tabela deste PDV</span>

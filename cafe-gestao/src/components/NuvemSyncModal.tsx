@@ -280,7 +280,10 @@ export const NuvemSyncModal: React.FC<NuvemSyncModalProps> = ({
             </div>
 
             {/* Architecture Architecture Diagram */}
-            <div className="bg-recreio-espresso-950 text-white p-4 sm:p-5 rounded-2xl shadow-inner space-y-3">
+            <div
+              style={{ backgroundColor: '#231914', color: '#ffffff' }}
+              className="bg-recreio-espresso-950 text-white p-4 sm:p-5 rounded-2xl shadow-inner space-y-3"
+            >
               <span className="text-[10px] uppercase font-bold text-recreio-gold-400 tracking-wider">
                 Topologia da Solução
               </span>
@@ -316,7 +319,8 @@ export const NuvemSyncModal: React.FC<NuvemSyncModalProps> = ({
               <button
                 onClick={handleUploadLocalData}
                 disabled={isUploading}
-                className="w-full inline-flex items-center justify-center space-x-2 bg-recreio-gold-700 hover:bg-recreio-gold-800 disabled:opacity-50 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition-all min-h-[44px]"
+                style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
+                className="w-full inline-flex items-center justify-center space-x-2 bg-recreio-gold-700 hover:bg-recreio-gold-800 disabled:opacity-50 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition-all min-h-[44px] active:scale-95"
               >
                 <RefreshCw className={`w-4 h-4 ${isUploading ? 'animate-spin' : ''}`} />
                 <span>

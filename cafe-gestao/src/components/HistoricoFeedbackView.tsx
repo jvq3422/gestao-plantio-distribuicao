@@ -58,7 +58,8 @@ export const HistoricoFeedbackView: React.FC<HistoricoFeedbackViewProps> = ({
 
           <button
             onClick={() => onOpenNewHarvestModal(selectedPlotId)}
-            className="inline-flex items-center space-x-1.5 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white text-xs sm:text-sm font-bold px-3.5 py-2 rounded-xl transition-colors shadow-sm"
+            style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
+            className="inline-flex items-center space-x-1.5 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white text-xs sm:text-sm font-bold px-3.5 py-2 rounded-xl transition-colors shadow-sm active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Registrar Colheita Real</span>
@@ -68,7 +69,13 @@ export const HistoricoFeedbackView: React.FC<HistoricoFeedbackViewProps> = ({
 
       {/* AI Machine Feedback Card */}
       {feedback && currentPlot && (
-        <div className="bg-gradient-to-br from-recreio-espresso-950 to-[#2e180d] text-white rounded-2xl p-6 shadow-md space-y-4 border border-recreio-gold-900/60">
+        <div
+          className="text-white rounded-2xl p-6 shadow-md space-y-4 border border-[#643410]/60"
+          style={{
+            backgroundColor: '#231914',
+            backgroundImage: 'linear-gradient(135deg, #231914 0%, #2e180d 100%)',
+          }}
+        >
           <div className="flex items-center justify-between border-b border-stone-800 pb-3">
             <div className="flex items-center space-x-2">
               <Sparkles className="w-5 h-5 text-recreio-gold-400" />

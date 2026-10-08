@@ -307,7 +307,8 @@ export const ModalNovaAnalise: React.FC<ModalNovaAnaliseProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold transition-all shadow-md min-h-[44px]"
+              style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
+              className="px-5 py-2.5 rounded-xl bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold transition-all shadow-md min-h-[44px] active:scale-95"
             >
               Salvar Análise
             </button>

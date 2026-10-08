@@ -59,7 +59,8 @@ export const ProdutosEstoqueTab: React.FC<ProdutosEstoqueTabProps> = ({
 
         <button
           onClick={onOpenNovoProdutoModal}
-          className="inline-flex items-center space-x-2 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-sm transition-all self-start sm:self-auto"
+          style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
+          className="inline-flex items-center space-x-2 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-sm transition-all self-start sm:self-auto active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>Cadastrar Novo Produto</span>
@@ -138,7 +139,8 @@ export const ProdutosEstoqueTab: React.FC<ProdutosEstoqueTabProps> = ({
           </div>
           <button
             onClick={onOpenNovoProdutoModal}
-            className="inline-flex items-center space-x-2 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-md transition-all"
+            style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
+            className="inline-flex items-center space-x-2 bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-md transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Cadastrar Novo Produto</span>

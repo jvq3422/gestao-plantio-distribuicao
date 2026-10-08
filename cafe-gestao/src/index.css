@@ -1,5 +1,63 @@
 @import "tailwindcss";
 
+:root {
+  --color-recreio-gold-50: #fdfaf3;
+  --color-recreio-gold-100: #faeed9;
+  --color-recreio-gold-200: #f5dcaf;
+  --color-recreio-gold-300: #ecc47b;
+  --color-recreio-gold-400: #e0a442;
+  --color-recreio-gold-500: #c87d13;
+  --color-recreio-gold-600: #b4670c;
+  --color-recreio-gold-700: #964f0b;
+  --color-recreio-gold-800: #7a3e0f;
+  --color-recreio-gold-900: #643410;
+  --color-recreio-gold-950: #391a05;
+
+  --color-recreio-espresso-50: #f8f6f4;
+  --color-recreio-espresso-100: #ede7e1;
+  --color-recreio-espresso-200: #dcd1c5;
+  --color-recreio-espresso-300: #c2b09e;
+  --color-recreio-espresso-400: #a58d79;
+  --color-recreio-espresso-500: #8c725e;
+  --color-recreio-espresso-600: #715a4b;
+  --color-recreio-espresso-700: #5a473b;
+  --color-recreio-espresso-800: #4a3b32;
+  --color-recreio-espresso-900: #3c3029;
+  --color-recreio-espresso-950: #231914;
+
+  --color-recreio-dark: #1c120c;
+  --color-recreio-cream: #faf8f4;
+
+  --color-folha-50: #f2f9f4;
+  --color-folha-100: #e1f2e6;
+  --color-folha-200: #c4e5ce;
+  --color-folha-300: #97d1a8;
+  --color-folha-400: #64b67e;
+  --color-folha-500: #3f9a5c;
+  --color-folha-600: #2f7d48;
+  --color-folha-700: #27633b;
+  --color-folha-800: #224f31;
+  --color-folha-900: #1d422a;
+  --color-folha-950: #0b2415;
+
+  --color-coffee-50: #fbf8f5;
+  --color-coffee-100: #f4ede6;
+  --color-coffee-200: #e8dcce;
+  --color-coffee-300: #d7c2ad;
+  --color-coffee-400: #c2a187;
+  --color-coffee-500: #ad8466;
+  --color-coffee-600: #976e52;
+  --color-coffee-700: #7d5942;
+  --color-coffee-800: #674a38;
+  --color-coffee-900: #553d30;
+  --color-coffee-950: #231914;
+
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-serif-brand: "Playfair Display", Georgia, serif;
+  --font-playfair: "Playfair Display", Georgia, serif;
+}
+
 @theme {
   --color-recreio-gold-50: #fdfaf3;
   --color-recreio-gold-100: #faeed9;
@@ -58,16 +116,17 @@
   --font-playfair: "Playfair Display", Georgia, serif;
 }
 
-@layer base {
-  * {
-    box-sizing: border-box;
-  }
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
 
-  body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    background-color: #faf8f4;
-    color: #1c120c;
-  }
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #faf8f4;
+  color: #1c120c;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .font-playfair,
@@ -82,13 +141,114 @@
   flex-direction: column;
 }
 
-/* Mobile Usability & Touch Optimization */
+/* ==========================================================================
+   ROCK-SOLID BRAND UTILITIES (Cross-browser, mobile and webkit fallbacks)
+   ========================================================================== */
+
+/* Backgrounds - Recreio Gold (Ocre da Chapada) */
+.bg-recreio-gold-50 { background-color: #fdfaf3 !important; }
+.bg-recreio-gold-100 { background-color: #faeed9 !important; }
+.bg-recreio-gold-200 { background-color: #f5dcaf !important; }
+.bg-recreio-gold-300 { background-color: #ecc47b !important; }
+.bg-recreio-gold-400 { background-color: #e0a442 !important; }
+.bg-recreio-gold-500 { background-color: #c87d13 !important; }
+.bg-recreio-gold-600 { background-color: #b4670c !important; }
+.bg-recreio-gold-700 { background-color: #964f0b !important; }
+.bg-recreio-gold-800 { background-color: #7a3e0f !important; }
+.bg-recreio-gold-900 { background-color: #643410 !important; }
+.bg-recreio-gold-950 { background-color: #391a05 !important; }
+
+/* Backgrounds - Recreio Espresso (Café Tostado) */
+.bg-recreio-espresso-50 { background-color: #f8f6f4 !important; }
+.bg-recreio-espresso-100 { background-color: #ede7e1 !important; }
+.bg-recreio-espresso-200 { background-color: #dcd1c5 !important; }
+.bg-recreio-espresso-300 { background-color: #c2b09e !important; }
+.bg-recreio-espresso-400 { background-color: #a58d79 !important; }
+.bg-recreio-espresso-500 { background-color: #8c725e !important; }
+.bg-recreio-espresso-600 { background-color: #715a4b !important; }
+.bg-recreio-espresso-700 { background-color: #5a473b !important; }
+.bg-recreio-espresso-800 { background-color: #4a3b32 !important; }
+.bg-recreio-espresso-900 { background-color: #3c3029 !important; }
+.bg-recreio-espresso-950 { background-color: #231914 !important; }
+.bg-recreio-dark { background-color: #1c120c !important; }
+.bg-recreio-cream { background-color: #faf8f4 !important; }
+
+/* Backgrounds - Folha & Coffee */
+.bg-folha-50 { background-color: #f2f9f4 !important; }
+.bg-folha-100 { background-color: #e1f2e6 !important; }
+.bg-folha-600 { background-color: #2f7d48 !important; }
+.bg-folha-700 { background-color: #27633b !important; }
+.bg-folha-800 { background-color: #224f31 !important; }
+.bg-coffee-50 { background-color: #fbf8f5 !important; }
+.bg-coffee-100 { background-color: #f4ede6 !important; }
+.bg-coffee-700 { background-color: #7d5942 !important; }
+.bg-coffee-800 { background-color: #674a38 !important; }
+.bg-coffee-950 { background-color: #231914 !important; }
+
+/* Hovers */
+.hover\:bg-recreio-gold-700:hover { background-color: #964f0b !important; }
+.hover\:bg-recreio-gold-800:hover { background-color: #7a3e0f !important; }
+.hover\:bg-recreio-espresso-900:hover { background-color: #3c3029 !important; }
+.hover\:bg-recreio-espresso-950:hover { background-color: #231914 !important; }
+
+/* Text Colors */
+.text-recreio-gold-300 { color: #ecc47b !important; }
+.text-recreio-gold-400 { color: #e0a442 !important; }
+.text-recreio-gold-500 { color: #c87d13 !important; }
+.text-recreio-gold-600 { color: #b4670c !important; }
+.text-recreio-gold-700 { color: #964f0b !important; }
+.text-recreio-gold-800 { color: #7a3e0f !important; }
+.text-recreio-gold-900 { color: #643410 !important; }
+.text-recreio-gold-950 { color: #391a05 !important; }
+
+.text-recreio-espresso-700 { color: #5a473b !important; }
+.text-recreio-espresso-800 { color: #4a3b32 !important; }
+.text-recreio-espresso-900 { color: #3c3029 !important; }
+.text-recreio-espresso-950 { color: #231914 !important; }
+
+.text-folha-700 { color: #27633b !important; }
+.text-folha-800 { color: #224f31 !important; }
+.text-coffee-700 { color: #7d5942 !important; }
+.text-coffee-800 { color: #674a38 !important; }
+
+/* Border Colors */
+.border-recreio-gold-200 { border-color: #f5dcaf !important; }
+.border-recreio-gold-300 { border-color: #ecc47b !important; }
+.border-recreio-gold-400 { border-color: #e0a442 !important; }
+.border-recreio-gold-500 { border-color: #c87d13 !important; }
+.border-recreio-gold-600 { border-color: #b4670c !important; }
+.border-recreio-gold-700 { border-color: #964f0b !important; }
+.border-recreio-gold-800 { border-color: #7a3e0f !important; }
+.border-recreio-gold-900 { border-color: #643410 !important; }
+.border-recreio-espresso-900 { border-color: #3c3029 !important; }
+
+/* Ring Colors */
+.ring-recreio-gold-500 { --tw-ring-color: #c87d13 !important; }
+
+/* ==========================================================================
+   GRADIENT FALLBACKS FOR MOBILE BROWSERS (Brave, Chrome Mobile, iOS Safari)
+   ========================================================================== */
+.bg-recreio-banner,
+.from-recreio-espresso-950 {
+  background-color: #231914 !important;
+  background-image: -webkit-linear-gradient(135deg, #231914 0%, #3c3029 60%, #3d2012 100%) !important;
+  background-image: linear-gradient(135deg, #231914 0%, #3c3029 60%, #3d2012 100%) !important;
+}
+
+/* ==========================================================================
+   MOBILE TOUCH & RESPONSIVENESS OPTIMIZATIONS
+   ========================================================================== */
 @media (max-width: 640px) {
-  /* Prevent iOS Safari auto-zoom on form inputs */
+  /* Prevent iOS Safari auto-zoom on inputs */
   input:not([type="checkbox"]):not([type="radio"]),
   select,
   textarea {
     font-size: 16px !important;
+  }
+
+  /* Better tap feedback */
+  button, a {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -97,20 +257,23 @@
 .overflow-x-auto,
 .overflow-y-auto {
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 /* Hide scrollbar for clean horizontal tab swipe on mobile */
 .no-scrollbar::-webkit-scrollbar,
 .scrollbar-none::-webkit-scrollbar {
-  display: none;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 .no-scrollbar,
 .scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
-/* Custom scrollbars */
+/* Custom scrollbars for desktop */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
