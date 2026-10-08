@@ -14,8 +14,6 @@ import {
   FileText,
   ShieldAlert,
   Sliders,
-  Award,
-  Mountain,
   FileSpreadsheet,
   Copy,
   Check,
