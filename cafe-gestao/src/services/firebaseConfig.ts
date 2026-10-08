@@ -83,7 +83,6 @@ export function initializeFirebase(): {
   try {
     if (getApps().length === 0) {
       appInstance = initializeApp(config);
-      // Habilita Cache Persistente (IndexedDB) para funcionamento offline no campo + Realtime sync
       try {
         firestoreInstance = initializeFirestore(appInstance, {
           localCache: persistentLocalCache({
@@ -91,8 +90,12 @@ export function initializeFirebase(): {
           }),
         });
       } catch (cacheErr) {
-        // Se já tiver sido inicializado nesta sessão
-        firestoreInstance = getFirestore(appInstance);
+        try {
+          firestoreInstance = getFirestore(appInstance);
+        } catch (fbErr) {
+          console.warn('[Firebase] Falha ao obter Firestore:', fbErr);
+          firestoreInstance = null;
+        }
       }
       authInstance = getAuth(appInstance);
     } else {

@@ -15,83 +15,7 @@
     <meta name="theme-color" content="#1c120c" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Recreio do Morro • Chapada Diamantina - Bahia | Gestão Agronômica & Distribuição</title>
-    <script>
-      window.tailwind = window.tailwind || {};
-      window.tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
-              serif: ['"Playfair Display"', 'Georgia', 'serif'],
-              'serif-brand': ['"Playfair Display"', 'Georgia', 'serif'],
-              playfair: ['"Playfair Display"', 'Georgia', 'serif'],
-            },
-            colors: {
-              recreio: {
-                // Dourado Ocre da Chapada Diamantina (Cores do Sol/Morro do Logo)
-                gold: {
-                  50: '#fdfaf3',
-                  100: '#faeed9',
-                  200: '#f5dcaf',
-                  300: '#ecc47b',
-                  400: '#e0a442',
-                  500: '#c87d13',
-                  600: '#b4670c',
-                  700: '#964f0b',
-                  800: '#7a3e0f',
-                  900: '#643410',
-                  950: '#391a05',
-                },
-                // Marrom Café Tostado / Silhueta do Morro
-                espresso: {
-                  50: '#f8f6f4',
-                  100: '#ede7e1',
-                  200: '#dcd1c5',
-                  300: '#c2b09e',
-                  400: '#a58d79',
-                  500: '#8c725e',
-                  600: '#715a4b',
-                  700: '#5a473b',
-                  800: '#4a3b32',
-                  900: '#3c3029',
-                  950: '#231914',
-                },
-                dark: '#1c120c',
-                cream: '#faf8f4',
-              },
-              folha: {
-                50: '#f2f9f4',
-                100: '#e1f2e6',
-                200: '#c4e5ce',
-                300: '#97d1a8',
-                400: '#64b67e',
-                500: '#3f9a5c',
-                600: '#2f7d48',
-                700: '#27633b',
-                800: '#224f31',
-                900: '#1d422a',
-                950: '#0b2415',
-              },
-              coffee: {
-                50: '#fbf8f5',
-                100: '#f4ede6',
-                200: '#e8dcce',
-                300: '#d7c2ad',
-                400: '#c2a187',
-                500: '#ad8466',
-                600: '#976e52',
-                700: '#7d5942',
-                800: '#674a38',
-                900: '#553d30',
-                950: '#231914',
-              }
-            }
-          }
-        }
-      }
-    </script>
-    <script src="/tailwind.min.js"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -99,6 +23,7 @@
       body {
         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
         color: #1c120c;
+        background-color: #faf8f4;
       }
       .font-serif, .font-serif-brand, .font-playfair {
         font-family: 'Playfair Display', Georgia, serif !important;
@@ -107,6 +32,35 @@
         font-family: 'JetBrains Mono', monospace;
       }
     </style>
+    <script>
+      // Capturador global de erros para prevenção de tela branca
+      window.addEventListener('error', function(event) {
+        console.error('[App Crash]', event.error || event.message);
+        var root = document.getElementById('root');
+        if (root && (!root.children || root.children.length === 0)) {
+          var box = document.getElementById('fatal-error-fallback');
+          if (!box) {
+            box = document.createElement('div');
+            box.id = 'fatal-error-fallback';
+            box.style.cssText = 'padding:24px;background:#fff;color:#991b1b;border:2px solid #f87171;border-radius:12px;font-family:sans-serif;margin:30px auto;max-width:600px;box-shadow:0 10px 25px rgba(0,0,0,0.1);';
+            box.innerHTML = '<h3 style="margin-top:0;color:#991b1b;">Diagnóstico de Inicialização</h3>' +
+              '<p style="color:#374151;font-size:14px;">Ocorreu uma exceção ao carregar os módulos:</p>' +
+              '<pre style="background:#fef2f2;padding:12px;border-radius:8px;font-size:12px;white-space:pre-wrap;color:#b91c1c;">' +
+              (event.message || event.error?.message || 'Erro desconhecido') + '\n' +
+              (event.filename ? ('Origem: ' + event.filename + ':' + event.lineno) : '') +
+              '</pre>' +
+              '<div style="margin-top:16px;display:flex;gap:12px;">' +
+                '<button onclick="location.reload()" style="padding:10px 18px;background:#964f0b;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">Recarregar</button>' +
+                '<button onclick="localStorage.clear();location.reload()" style="padding:10px 18px;background:#4b5563;color:#fff;border:none;border-radius:8px;cursor:pointer;">Limpar Dados Locais</button>' +
+              '</div>';
+            document.body.appendChild(box);
+          }
+        }
+      });
+      window.addEventListener('unhandledrejection', function(event) {
+        console.warn('[Unhandled Rejection]', event.reason);
+      });
+    </script>
   </head>
   <body class="bg-[#faf8f4] text-stone-900 antialiased selection:bg-recreio-gold-500 selection:text-white min-h-screen">
     <div id="root"></div>

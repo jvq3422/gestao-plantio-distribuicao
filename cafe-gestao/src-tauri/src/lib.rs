@@ -1,3 +1,5 @@
+use tauri::Manager;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
@@ -9,6 +11,16 @@ pub fn run() {
             .build(),
         )?;
       }
+
+      #[cfg(desktop)]
+      {
+        if let Some(window) = app.get_webview_window("main") {
+          if cfg!(debug_assertions) || std::env::var("TAURI_DEVTOOLS").is_ok() {
+            let _ = window.open_devtools();
+          }
+        }
+      }
+
       Ok(())
     })
     .run(tauri::generate_context!())

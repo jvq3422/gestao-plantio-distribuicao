@@ -1,4 +1,62 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-recreio-gold-50: #fdfaf3;
+  --color-recreio-gold-100: #faeed9;
+  --color-recreio-gold-200: #f5dcaf;
+  --color-recreio-gold-300: #ecc47b;
+  --color-recreio-gold-400: #e0a442;
+  --color-recreio-gold-500: #c87d13;
+  --color-recreio-gold-600: #b4670c;
+  --color-recreio-gold-700: #964f0b;
+  --color-recreio-gold-800: #7a3e0f;
+  --color-recreio-gold-900: #643410;
+  --color-recreio-gold-950: #391a05;
+
+  --color-recreio-espresso-50: #f8f6f4;
+  --color-recreio-espresso-100: #ede7e1;
+  --color-recreio-espresso-200: #dcd1c5;
+  --color-recreio-espresso-300: #c2b09e;
+  --color-recreio-espresso-400: #a58d79;
+  --color-recreio-espresso-500: #8c725e;
+  --color-recreio-espresso-600: #715a4b;
+  --color-recreio-espresso-700: #5a473b;
+  --color-recreio-espresso-800: #4a3b32;
+  --color-recreio-espresso-900: #3c3029;
+  --color-recreio-espresso-950: #231914;
+
+  --color-recreio-dark: #1c120c;
+  --color-recreio-cream: #faf8f4;
+
+  --color-folha-50: #f2f9f4;
+  --color-folha-100: #e1f2e6;
+  --color-folha-200: #c4e5ce;
+  --color-folha-300: #97d1a8;
+  --color-folha-400: #64b67e;
+  --color-folha-500: #3f9a5c;
+  --color-folha-600: #2f7d48;
+  --color-folha-700: #27633b;
+  --color-folha-800: #224f31;
+  --color-folha-900: #1d422a;
+  --color-folha-950: #0b2415;
+
+  --color-coffee-50: #fbf8f5;
+  --color-coffee-100: #f4ede6;
+  --color-coffee-200: #e8dcce;
+  --color-coffee-300: #d7c2ad;
+  --color-coffee-400: #c2a187;
+  --color-coffee-500: #ad8466;
+  --color-coffee-600: #976e52;
+  --color-coffee-700: #7d5942;
+  --color-coffee-800: #674a38;
+  --color-coffee-900: #553d30;
+  --color-coffee-950: #231914;
+
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-serif-brand: "Playfair Display", Georgia, serif;
+  --font-playfair: "Playfair Display", Georgia, serif;
+}
 
 @layer base {
   * {
@@ -7,6 +65,8 @@
 
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: #faf8f4;
+    color: #1c120c;
   }
 }
 

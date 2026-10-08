@@ -49,17 +49,39 @@ export function App() {
   const [preselectedPlotId, setPreselectedPlotId] = useState<string>('');
   const [activeWorkOrderPlan, setActiveWorkOrderPlan] = useState<RecommendationPlan | null>(null);
 
-  // Carregar dados na inicialização e ativar sincronização em tempo real
+  // Carregar dados na inicialização e ativar sincronização em tempo real de forma resiliente
   useEffect(() => {
-    loadAllData();
-    const unsubStatus = SyncService.onStatusChange(setSyncStatus);
-    SyncService.startRealtimeSync(() => {
+    try {
       loadAllData();
-    });
+    } catch (e) {
+      console.error('Erro ao carregar dados locais:', e);
+    }
+
+    let unsubStatus: (() => void) | null = null;
+    try {
+      unsubStatus = SyncService.onStatusChange(setSyncStatus);
+      SyncService.startRealtimeSync(() => {
+        try {
+          loadAllData();
+        } catch (e) {
+          console.error('Erro ao recarregar dados após sync:', e);
+        }
+      }).catch((syncErr) => {
+        console.warn('Erro ao inicializar realtime sync:', syncErr);
+      });
+    } catch (err) {
+      console.warn('Erro ao configurar SyncService:', err);
+    }
 
     return () => {
-      unsubStatus();
-      SyncService.stopRealtimeSync();
+      if (unsubStatus) {
+        try {
+          unsubStatus();
+        } catch (_) {}
+      }
+      try {
+        SyncService.stopRealtimeSync();
+      } catch (_) {}
     };
   }, []);
 
