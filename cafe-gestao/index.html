@@ -68,10 +68,17 @@
     <script>
       // Só registra Service Worker na Web via HTTP/HTTPS real (não no Desktop/Tauri)
       if ('serviceWorker' in navigator && !window.__TAURI_INTERNALS__ && location.protocol.indexOf('http') === 0 && location.hostname !== 'tauri.localhost') {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then((reg) => {
+        var refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js').then(function(reg) {
             reg.update();
-          }).catch((err) => {
+          }).catch(function(err) {
             console.log('SW registration note:', err);
           });
         });

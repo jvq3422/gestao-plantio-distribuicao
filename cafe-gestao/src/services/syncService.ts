@@ -14,20 +14,21 @@ import {
   Plot,
   SoilAnalysis,
   HarvestRecord,
-  RecommendationPlan,
   Produto,
   PontoVenda,
   PrecoNegociado,
   SaidaVenda,
-  ParametrosAgronomicos,
 } from '../types';
 
 export type SyncStatus = 'online' | 'offline_cache' | 'not_configured' | 'syncing';
+
+export const SYNC_PROTOCOL_VERSION = 5;
 
 export class SyncService {
   private static unsubscribers: Unsubscribe[] = [];
   private static statusListeners: ((status: SyncStatus) => void)[] = [];
   private static currentStatus: SyncStatus = 'not_configured';
+  private static isClearing = false;
 
   static getStatus(): SyncStatus {
     const { isReady } = initializeFirebase();
@@ -63,10 +64,14 @@ export class SyncService {
 
     StorageService.setSyncHook(
       (col, ent) => {
-        this.pushEntity(col, ent);
+        if (!this.isClearing) {
+          this.pushEntity(col, ent);
+        }
       },
       (col, id) => {
-        this.deleteEntity(col, id);
+        if (!this.isClearing) {
+          this.deleteEntity(col, id);
+        }
       }
     );
 
@@ -90,6 +95,7 @@ export class SyncService {
       getDocs(collection(db, 'recreio_precos')),
       getDocs(collection(db, 'recreio_saidas')),
     ]).then(([plotsRes, analysesRes, harvestsRes, produtosRes, pdvsRes, precosRes, saidasRes]) => {
+      if (this.isClearing) return;
       let hasUpdates = false;
 
       if (plotsRes.status === 'fulfilled') {
@@ -148,10 +154,30 @@ export class SyncService {
       console.warn('[SyncService] Erro na busca proativa inicial:', err);
     });
 
+    // 0. Listener de Controle e Reset Global da Nuvem
+    const unsubMeta = onSnapshot(
+      doc(db, 'recreio_meta', 'sync_control'),
+      (snapshot) => {
+        if (this.isClearing) return;
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          const remoteResetAt = Number(data?.lastResetAt || 0);
+          const localSeen = Number(localStorage.getItem('recreio_last_reset_seen') || 0);
+          if (remoteResetAt > localSeen) {
+            localStorage.setItem('recreio_last_reset_seen', String(remoteResetAt));
+            StorageService.clearAllData();
+            onDataUpdated();
+          }
+        }
+      },
+      (err) => console.warn('[Sync] Erro snapshot sync_control:', err)
+    );
+
     // 1. Plots (Talhões)
     const unsubPlots = onSnapshot(
       collection(db, 'recreio_plots'),
       (snapshot) => {
+        if (this.isClearing) return;
         const remotePlots: Plot[] = [];
         snapshot.forEach((d) => remotePlots.push(d.data() as Plot));
         StorageService.savePlots(remotePlots, true);
@@ -164,6 +190,7 @@ export class SyncService {
     const unsubAnalyses = onSnapshot(
       collection(db, 'recreio_analyses'),
       (snapshot) => {
+        if (this.isClearing) return;
         const remoteAnalyses: SoilAnalysis[] = [];
         snapshot.forEach((d) => remoteAnalyses.push(d.data() as SoilAnalysis));
         StorageService.saveAnalyses(remoteAnalyses, true);
@@ -176,6 +203,7 @@ export class SyncService {
     const unsubHarvests = onSnapshot(
       collection(db, 'recreio_harvests'),
       (snapshot) => {
+        if (this.isClearing) return;
         const remoteHarvests: HarvestRecord[] = [];
         snapshot.forEach((d) => remoteHarvests.push(d.data() as HarvestRecord));
         StorageService.saveHarvests(remoteHarvests, true);
@@ -188,6 +216,7 @@ export class SyncService {
     const unsubProdutos = onSnapshot(
       collection(db, 'recreio_produtos'),
       (snapshot) => {
+        if (this.isClearing) return;
         const remoteProdutos: Produto[] = [];
         snapshot.forEach((d) => remoteProdutos.push(d.data() as Produto));
         StorageService.saveProdutos(remoteProdutos, true);
@@ -200,6 +229,7 @@ export class SyncService {
     const unsubPdvs = onSnapshot(
       collection(db, 'recreio_pdvs'),
       (snapshot) => {
+        if (this.isClearing) return;
         const remotePdvs: PontoVenda[] = [];
         snapshot.forEach((d) => remotePdvs.push(d.data() as PontoVenda));
         StorageService.savePontosVenda(remotePdvs, true);
@@ -212,6 +242,7 @@ export class SyncService {
     const unsubPrecos = onSnapshot(
       collection(db, 'recreio_precos'),
       (snapshot) => {
+        if (this.isClearing) return;
         const remotePrecos: PrecoNegociado[] = [];
         snapshot.forEach((d) => remotePrecos.push(d.data() as PrecoNegociado));
         StorageService.savePrecosNegociados(remotePrecos, true);
@@ -224,6 +255,7 @@ export class SyncService {
     const unsubSaidas = onSnapshot(
       collection(db, 'recreio_saidas'),
       (snapshot) => {
+        if (this.isClearing) return;
         const remoteSaidas: SaidaVenda[] = [];
         snapshot.forEach((d) => remoteSaidas.push(d.data() as SaidaVenda));
         StorageService.saveSaidas(remoteSaidas, true);
@@ -233,6 +265,7 @@ export class SyncService {
     );
 
     this.unsubscribers = [
+      unsubMeta,
       unsubPlots,
       unsubAnalyses,
       unsubHarvests,
@@ -245,8 +278,6 @@ export class SyncService {
         window.removeEventListener('offline', handleOffline);
       },
     ];
-
-    return true;
 
     return true;
   }
@@ -263,18 +294,24 @@ export class SyncService {
   }
 
   /**
-   * Salva uma entidade no Firestore (com suporte nativo a offline no campo)
+   * Salva uma entidade no Firestore com protocolo v5 e clientTimestamp em tempo real
    */
   static async pushEntity<T extends { id: string }>(
     collectionName: string,
     entity: T
   ): Promise<void> {
+    if (this.isClearing) return;
     const { db, isReady } = initializeFirebase();
     if (!isReady || !db) return;
 
     try {
       const docRef = doc(db, collectionName, entity.id);
-      await setDoc(docRef, entity, { merge: true });
+      const clientTimestamp = Date.now();
+      await setDoc(docRef, {
+        ...entity,
+        syncVersion: SYNC_PROTOCOL_VERSION,
+        clientTimestamp,
+      }, { merge: true });
     } catch (err) {
       console.warn(`[SyncService] Erro ao salvar ${collectionName}/${entity.id}:`, err);
     }
@@ -284,6 +321,7 @@ export class SyncService {
    * Remove uma entidade no Firestore
    */
   static async deleteEntity(collectionName: string, id: string): Promise<void> {
+    if (this.isClearing) return;
     const { db, isReady } = initializeFirebase();
     if (!isReady || !db) return;
 
@@ -295,7 +333,7 @@ export class SyncService {
   }
 
   /**
-   * Carrega todos os dados do localStorage local para o Cloud Firestore
+   * Carrega todos os dados do localStorage local para o Cloud Firestore com timestamps válidos
    */
   static async uploadLocalDataToCloud(): Promise<{ success: boolean; message: string }> {
     const { db, isReady } = initializeFirebase();
@@ -307,48 +345,77 @@ export class SyncService {
       this.notifyStatus('syncing');
       ensureAuthenticated().catch(() => {});
       const batch = writeBatch(db);
+      const clientTimestamp = Date.now();
 
       // Plots
       const plots = StorageService.getPlots();
       plots.forEach((p) => {
-        batch.set(doc(db, 'recreio_plots', p.id), p, { merge: true });
+        batch.set(doc(db, 'recreio_plots', p.id), {
+          ...p,
+          syncVersion: SYNC_PROTOCOL_VERSION,
+          clientTimestamp,
+        }, { merge: true });
       });
 
       // Analyses
       const analyses = StorageService.getAnalyses();
       analyses.forEach((a) => {
-        batch.set(doc(db, 'recreio_analyses', a.id), a, { merge: true });
+        batch.set(doc(db, 'recreio_analyses', a.id), {
+          ...a,
+          syncVersion: SYNC_PROTOCOL_VERSION,
+          clientTimestamp,
+        }, { merge: true });
       });
 
       // Harvests
       const harvests = StorageService.getHarvests();
       harvests.forEach((h) => {
-        batch.set(doc(db, 'recreio_harvests', h.id), h, { merge: true });
+        batch.set(doc(db, 'recreio_harvests', h.id), {
+          ...h,
+          syncVersion: SYNC_PROTOCOL_VERSION,
+          clientTimestamp,
+        }, { merge: true });
       });
 
       // Produtos
       const produtos = StorageService.getProdutos();
       produtos.forEach((prod) => {
-        batch.set(doc(db, 'recreio_produtos', prod.id), prod, { merge: true });
+        batch.set(doc(db, 'recreio_produtos', prod.id), {
+          ...prod,
+          syncVersion: SYNC_PROTOCOL_VERSION,
+          clientTimestamp,
+        }, { merge: true });
       });
 
       // PDVs
       const pdvs = StorageService.getPontosVenda();
       pdvs.forEach((pdv) => {
-        batch.set(doc(db, 'recreio_pdvs', pdv.id), pdv, { merge: true });
+        batch.set(doc(db, 'recreio_pdvs', pdv.id), {
+          ...pdv,
+          syncVersion: SYNC_PROTOCOL_VERSION,
+          clientTimestamp,
+        }, { merge: true });
       });
 
       // Preços
       const precos = StorageService.getPrecosNegociados();
       precos.forEach((pr) => {
         const id = `${pr.pontoVendaId}_${pr.produtoId}`;
-        batch.set(doc(db, 'recreio_precos', id), pr, { merge: true });
+        batch.set(doc(db, 'recreio_precos', id), {
+          ...pr,
+          syncVersion: SYNC_PROTOCOL_VERSION,
+          clientTimestamp,
+        }, { merge: true });
       });
 
       // Saídas
       const saidas = StorageService.getSaidas();
       saidas.forEach((s) => {
-        batch.set(doc(db, 'recreio_saidas', s.id), s, { merge: true });
+        batch.set(doc(db, 'recreio_saidas', s.id), {
+          ...s,
+          syncVersion: SYNC_PROTOCOL_VERSION,
+          clientTimestamp,
+        }, { merge: true });
       });
 
       await batch.commit();
@@ -367,11 +434,13 @@ export class SyncService {
   }
 
   /**
-   * Remove todos os dados de todas as coleções na nuvem (Firestore)
+   * Remove todos os dados de todas as coleções na nuvem (Firestore) e propaga broadcast de zeramento
    */
   static async clearCloudData(): Promise<{ success: boolean; message: string }> {
+    this.isClearing = true;
     const { db, isReady } = initializeFirebase();
     if (!isReady || !db) {
+      this.isClearing = false;
       return { success: false, message: 'Firebase não está configurado.' };
     }
 
@@ -388,6 +457,20 @@ export class SyncService {
     try {
       this.notifyStatus('syncing');
 
+      // 1. Emitir marcador de reset no canal de controle recreio_meta para limpar simultaneamente todos os outros clientes
+      const resetTimestamp = Date.now();
+      localStorage.setItem('recreio_last_reset_seen', String(resetTimestamp));
+      try {
+        await setDoc(doc(db, 'recreio_meta', 'sync_control'), {
+          lastResetAt: resetTimestamp,
+          syncVersion: SYNC_PROTOCOL_VERSION,
+          updatedAt: new Date().toISOString(),
+        });
+      } catch (errMeta) {
+        console.warn('[SyncService] Aviso ao atualizar sync_control:', errMeta);
+      }
+
+      // 2. Apagar todos os documentos de todas as coleções na nuvem
       for (const colName of collectionsToClear) {
         const snap = await getDocs(collection(db, colName));
         if (!snap.empty) {
@@ -411,7 +494,11 @@ export class SyncService {
         success: false,
         message: `Falha ao limpar nuvem: ${err?.message || 'Erro de conexão'}`,
       };
+    } finally {
+      // Pequeno timeout para garantir que eventos locais em trânsito não re-enviem dados
+      setTimeout(() => {
+        this.isClearing = false;
+      }, 1500);
     }
   }
 }
-

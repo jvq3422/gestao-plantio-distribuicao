@@ -1,4 +1,4 @@
-const CACHE_NAME = 'recreio-morro-v3';
+const CACHE_NAME = 'recreio-morro-v5';
 const STATIC_ASSETS = [
   './manifest.json',
   './logo-principal.png',
