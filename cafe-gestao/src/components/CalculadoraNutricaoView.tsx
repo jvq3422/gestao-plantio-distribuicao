@@ -41,6 +41,17 @@ export const CalculadoraNutricaoView: React.FC<CalculadoraNutricaoViewProps> = (
   const [usaPalhaCafe, setUsaPalhaCafe] = useState<boolean>(true);
   const [palhaTonsHa, setPalhaTonsHa] = useState<number>(5.0);
 
+  // Sincronizar seleção quando os talhões chegarem da nuvem
+  useEffect(() => {
+    if (initialPlotId) {
+      setSelectedPlotId(initialPlotId);
+    } else if (!selectedPlotId && plots.length > 0) {
+      setSelectedPlotId(plots[0].id);
+    } else if (selectedPlotId && !plots.some((p) => p.id === selectedPlotId) && plots.length > 0) {
+      setSelectedPlotId(plots[0].id);
+    }
+  }, [plots, initialPlotId, selectedPlotId]);
+
   // Parâmetros Químicos Dinâmicos (Sem hardcoding)
   const [parametros, setParametros] = useState<ParametrosAgronomicos>(() => StorageService.getParametros());
   const [showConfigPanel, setShowConfigPanel] = useState<boolean>(false);

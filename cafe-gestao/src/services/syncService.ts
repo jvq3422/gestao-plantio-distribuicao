@@ -65,11 +65,8 @@ export class SyncService {
       this.pushEntity(col, ent);
     });
 
-    try {
-      await ensureAuthenticated();
-    } catch (e) {
-      console.warn('[SyncService] Autenticação em modo offline:', e);
-    }
+    // Autenticação opcional em segundo plano (não bloqueante para leitura/escrita)
+    ensureAuthenticated().catch(() => {});
 
     this.notifyStatus(navigator.onLine ? 'online' : 'offline_cache');
 
@@ -77,6 +74,74 @@ export class SyncService {
     const handleOffline = () => this.notifyStatus('offline_cache');
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+
+    // Carga proativa inicial imediata via getDocs (renderização instantânea na abertura)
+    Promise.allSettled([
+      getDocs(collection(db, 'recreio_plots')),
+      getDocs(collection(db, 'recreio_analyses')),
+      getDocs(collection(db, 'recreio_harvests')),
+      getDocs(collection(db, 'recreio_produtos')),
+      getDocs(collection(db, 'recreio_pdvs')),
+      getDocs(collection(db, 'recreio_precos')),
+      getDocs(collection(db, 'recreio_saidas')),
+    ]).then(([plotsRes, analysesRes, harvestsRes, produtosRes, pdvsRes, precosRes, saidasRes]) => {
+      let hasUpdates = false;
+
+      if (plotsRes.status === 'fulfilled' && !plotsRes.value.empty) {
+        const remotePlots: Plot[] = [];
+        plotsRes.value.forEach((d) => remotePlots.push(d.data() as Plot));
+        StorageService.savePlots(remotePlots, true);
+        hasUpdates = true;
+      }
+
+      if (analysesRes.status === 'fulfilled' && !analysesRes.value.empty) {
+        const remoteAnalyses: SoilAnalysis[] = [];
+        analysesRes.value.forEach((d) => remoteAnalyses.push(d.data() as SoilAnalysis));
+        StorageService.saveAnalyses(remoteAnalyses, true);
+        hasUpdates = true;
+      }
+
+      if (harvestsRes.status === 'fulfilled' && !harvestsRes.value.empty) {
+        const remoteHarvests: HarvestRecord[] = [];
+        harvestsRes.value.forEach((d) => remoteHarvests.push(d.data() as HarvestRecord));
+        StorageService.saveHarvests(remoteHarvests, true);
+        hasUpdates = true;
+      }
+
+      if (produtosRes.status === 'fulfilled' && !produtosRes.value.empty) {
+        const remoteProdutos: Produto[] = [];
+        produtosRes.value.forEach((d) => remoteProdutos.push(d.data() as Produto));
+        StorageService.saveProdutos(remoteProdutos, true);
+        hasUpdates = true;
+      }
+
+      if (pdvsRes.status === 'fulfilled' && !pdvsRes.value.empty) {
+        const remotePdvs: PontoVenda[] = [];
+        pdvsRes.value.forEach((d) => remotePdvs.push(d.data() as PontoVenda));
+        StorageService.savePontosVenda(remotePdvs, true);
+        hasUpdates = true;
+      }
+
+      if (precosRes.status === 'fulfilled' && !precosRes.value.empty) {
+        const remotePrecos: PrecoNegociado[] = [];
+        precosRes.value.forEach((d) => remotePrecos.push(d.data() as PrecoNegociado));
+        StorageService.savePrecosNegociados(remotePrecos, true);
+        hasUpdates = true;
+      }
+
+      if (saidasRes.status === 'fulfilled' && !saidasRes.value.empty) {
+        const remoteSaidas: SaidaVenda[] = [];
+        saidasRes.value.forEach((d) => remoteSaidas.push(d.data() as SaidaVenda));
+        StorageService.saveSaidas(remoteSaidas, true);
+        hasUpdates = true;
+      }
+
+      if (hasUpdates) {
+        onDataUpdated();
+      }
+    }).catch((err) => {
+      console.warn('[SyncService] Erro na busca proativa inicial:', err);
+    });
 
     // 1. Plots (Talhões)
     const unsubPlots = onSnapshot(
@@ -278,7 +343,7 @@ export class SyncService {
 
     try {
       this.notifyStatus('syncing');
-      await ensureAuthenticated();
+      ensureAuthenticated().catch(() => {});
       const batch = writeBatch(db);
 
       // Plots

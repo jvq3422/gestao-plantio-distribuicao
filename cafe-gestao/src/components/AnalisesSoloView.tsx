@@ -16,6 +16,12 @@ export const AnalisesSoloView: React.FC<AnalisesSoloViewProps> = ({
 }) => {
   const [selectedPlotId, setSelectedPlotId] = useState<string>(plots[0]?.id || '');
 
+  React.useEffect(() => {
+    if (!selectedPlotId && plots.length > 0) {
+      setSelectedPlotId(plots[0].id);
+    }
+  }, [plots, selectedPlotId]);
+
   const filteredAnalyses = analyses
     .filter((a) => !selectedPlotId || a.plotId === selectedPlotId)
     .sort((a, b) => new Date(b.dataColeta).getTime() - new Date(a.dataColeta).getTime());

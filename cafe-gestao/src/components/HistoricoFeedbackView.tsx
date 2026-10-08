@@ -18,6 +18,12 @@ export const HistoricoFeedbackView: React.FC<HistoricoFeedbackViewProps> = ({
 }) => {
   const [selectedPlotId, setSelectedPlotId] = useState<string>(plots[0]?.id || '');
 
+  React.useEffect(() => {
+    if (!selectedPlotId && plots.length > 0) {
+      setSelectedPlotId(plots[0].id);
+    }
+  }, [plots, selectedPlotId]);
+
   const filteredHarvests = harvests
     .filter((h) => !selectedPlotId || h.plotId === selectedPlotId)
     .sort((a, b) => b.safra.localeCompare(a.safra));

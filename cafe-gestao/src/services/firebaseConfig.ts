@@ -33,7 +33,11 @@ export function getStoredFirebaseConfig(): FirebaseClientConfig {
   if (local) {
     try {
       const parsed = JSON.parse(local);
-      if (parsed.projectId && parsed.apiKey) return parsed;
+      if (parsed.projectId === 'urnaricardo55777') {
+        localStorage.removeItem(STORAGE_KEY);
+      } else if (parsed.projectId && parsed.apiKey) {
+        return parsed;
+      }
     } catch {
       // ignore
     }
@@ -81,28 +85,19 @@ export function initializeFirebase(): {
   }
 
   try {
-    if (getApps().length === 0) {
-      appInstance = initializeApp(config);
-      try {
-        firestoreInstance = initializeFirestore(appInstance, {
-          localCache: persistentLocalCache({
-            tabManager: persistentMultipleTabManager(),
-          }),
-        });
-      } catch (cacheErr) {
-        try {
-          firestoreInstance = getFirestore(appInstance);
-        } catch (fbErr) {
-          console.warn('[Firebase] Falha ao obter Firestore:', fbErr);
-          firestoreInstance = null;
-        }
+    if (getApps().length > 0) {
+      const existingApp = getApp();
+      if (existingApp.options.projectId !== config.projectId) {
+        appInstance = initializeApp(config, 'recreiodomorro_' + Date.now());
+      } else {
+        appInstance = existingApp;
       }
-      authInstance = getAuth(appInstance);
     } else {
-      appInstance = getApp();
-      firestoreInstance = getFirestore(appInstance);
-      authInstance = getAuth(appInstance);
+      appInstance = initializeApp(config);
     }
+
+    firestoreInstance = getFirestore(appInstance);
+    authInstance = getAuth(appInstance);
 
     return {
       app: appInstance,
@@ -128,21 +123,24 @@ export async function ensureAuthenticated(): Promise<User | null> {
   if (auth.currentUser) return auth.currentUser;
 
   return new Promise((resolve) => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        unsubscribe();
-        resolve(user);
-      } else {
-        try {
-          const cred = await signInAnonymously(auth);
+    try {
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        if (user) {
           unsubscribe();
-          resolve(cred.user);
-        } catch (err) {
-          console.warn('[Firebase Auth] Erro ao autenticar anonimamente:', err);
-          unsubscribe();
-          resolve(null);
+          resolve(user);
+        } else {
+          try {
+            const cred = await signInAnonymously(auth);
+            unsubscribe();
+            resolve(cred.user);
+          } catch {
+            unsubscribe();
+            resolve(null);
+          }
         }
-      }
-    });
+      });
+    } catch {
+      resolve(null);
+    }
   });
 }
