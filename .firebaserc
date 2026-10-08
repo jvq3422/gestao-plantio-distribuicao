@@ -1,5 +1,17 @@
 {
   "projects": {
-    "default": "urnaricardo55777"
-  }
+    "default": "recreiodomorro",
+    "recreiodomorro": "recreiodomorro",
+    "urnaricardo55777": "urnaricardo55777"
+  },
+  "targets": {
+    "urnaricardo55777": {
+      "hosting": {
+        "recreiodomorro": [
+          "recreiodomorro"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

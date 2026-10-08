@@ -18,12 +18,12 @@ export interface FirebaseClientConfig {
 }
 
 export const DEFAULT_FIREBASE_CONFIG: FirebaseClientConfig = {
-  projectId: 'urnaricardo55777',
-  appId: '1:688742901853:web:36119f9a90cb8dad57c5b4',
-  storageBucket: 'urnaricardo55777.firebasestorage.app',
-  apiKey: 'AIzaSyCr4daoQiIwIR0gMa9pVWllxSHl7_o70nk',
-  authDomain: 'urnaricardo55777.firebaseapp.com',
-  messagingSenderId: '688742901853',
+  projectId: 'recreiodomorro',
+  appId: '1:943340628648:web:7a48fc4643f6802361f09d',
+  storageBucket: 'recreiodomorro.firebasestorage.app',
+  apiKey: 'AIzaSyDQ6Cb7w2BsvyXWqNZES4fyfkgp52M4Qw0',
+  authDomain: 'recreiodomorro.firebaseapp.com',
+  messagingSenderId: '943340628648',
 };
 
 const STORAGE_KEY = 'recreio_firebase_config_v1';

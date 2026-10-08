@@ -428,20 +428,20 @@ export const NuvemSyncModal: React.FC<NuvemSyncModalProps> = ({
               </span>
               <div className="inline-block p-2 bg-white rounded-2xl border border-stone-200 shadow-md">
                 <img
-                  src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Furnaricardo55777.web.app"
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Frecreiodomorro.web.app"
                   alt="QR Code para Acesso no iPhone"
                   className="w-44 h-44 rounded-xl object-contain mx-auto"
                 />
               </div>
               <div className="space-y-1">
                 <div className="text-[11px] font-mono text-stone-700 bg-stone-100 py-1.5 px-3 rounded-lg inline-block border border-stone-200 select-all">
-                  https://urnaricardo55777.web.app
+                  https://recreiodomorro.web.app
                 </div>
                 <div>
                   <button
                     type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText('https://urnaricardo55777.web.app');
+                      navigator.clipboard.writeText('https://recreiodomorro.web.app');
                       alert('Link copiado para a área de transferência!');
                     }}
                     className="text-xs font-bold text-recreio-gold-700 hover:text-recreio-gold-800 underline ml-2"
