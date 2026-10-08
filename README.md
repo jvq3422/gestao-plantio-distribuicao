@@ -27,25 +27,29 @@ Basta dar dois cliques em qualquer um dos arquivos na pasta raiz:
 
 ---
 
-### 📱 Opção 2: iPhone (iOS) • App em Tela Cheia (PWA)
-Permite usar o sistema no celular direto no campo, inclusive sem sinal de internet (offline).
+### 📱 Opção 2: Acesso pelo Celular (Controle Total por Você)
+Você tem total autonomia para conectar o celular da maneira que preferir, sem depender de serviços externos obrigatórios:
 
-1. Abra o link do sistema no navegador **Safari** do iPhone.
-2. Toque no botão de **Compartilhar** (ícone do quadrado com a seta para cima, na barra inferior do Safari).
-3. Role as opções e selecione **"Adicionar à Tela de Início"** (`+`).
-4. Toque em **Adicionar** no canto superior direito.
-5. Um ícone da **Fazenda Recreio do Morro** será criado na tela do seu iPhone. Ao abrir, ele roda em **tela cheia nativa** (sem barras de navegador) com cache offline ativo.
+#### Método A: Conexão Direta na Rede Local (Wi-Fi da Fazenda / Escritório)
+1. No computador, dê dois cliques em `iniciar_sistema.bat` (ou execute `npm run dev` no terminal).
+2. O terminal mostrará o endereço da rede local, por exemplo:
+   ```text
+   ➜  Network: http://192.168.0.15:5173/
+   ```
+3. No celular (conectado ao mesmo Wi-Fi), abra o navegador e acerte o endereço mostrado (ex: `http://192.168.0.15:5173`).
+4. **Para usar em Tela Cheia no iPhone (Safari):** Toque no botão de **Compartilhar** (quadrado com seta para cima) > **"Adicionar à Tela de Início"**. O ícone da fazenda será adicionado e abrirá em modo app nativo.
+
+#### Método B: Hospedagem ou Servidor Próprio
+Se você quiser hospedar o sistema no seu próprio servidor, Raspberry Pi, VPS ou serviço web:
+1. Gere os arquivos estáticos otimizados executando `npm run build` na pasta `cafe-gestao`.
+2. A pasta `dist` gerada é 100% autossuficiente e pode ser hospedada em qualquer servidor HTTP / Nginx / Apache ou serviço estático da sua preferência.
 
 ---
 
-### ☁️ Opção 3: Sincronização em Nuvem (Firebase)
-Para manter o computador e os celulares sincronizados em tempo real:
-
-1. No topo da tela do sistema, clique no botão **"Nuvem Sync"** (ou **"Conectar Nuvem"**).
-2. Insira as credenciais do seu projeto Firebase (`apiKey`, `projectId`, etc.).
-3. Clique em **"Salvar e Conectar"**.
-4. Clique em **"Subir Dados Locais para Nuvem"** para enviar os dados existentes da fazenda para o banco online.
-5. Agora qualquer alteração feita no campo ou no escritório será sincronizada automaticamente entre todos os aparelhos.
+### ☁️ Opção 3: Sincronização em Nuvem (Opcional)
+Caso queira sincronizar dados em tempo real entre o computador e celulares fora da rede local:
+* No cabeçalho, use o botão **"Nuvem Sync"** para inserir suas credenciais do Firebase quando desejar.
+* Se preferir trabalhar 100% offline e local, você não precisa configurar nada; todos os dados ficam salvos com segurança no próprio dispositivo.
 
 ---
 

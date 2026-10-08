@@ -20,7 +20,7 @@ if not exist node_modules (
 )
 
 echo Iniciando servidor da aplicacao...
-echo O sistema estara acessivel em: http://localhost:5173
+echo O sistema estara acessivel no computador e na rede local para celular.
 echo.
-call npm run dev
+call npm run dev -- --host
 pause
