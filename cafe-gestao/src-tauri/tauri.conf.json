@@ -10,19 +10,7 @@
     "beforeBuildCommand": "npm run build"
   },
   "app": {
-    "windows": [
-      {
-        "label": "main",
-        "title": "Fazenda Recreio do Morro • Gestão Agronômica e Distribuição",
-        "width": 1280,
-        "height": 820,
-        "minWidth": 900,
-        "minHeight": 600,
-        "center": true,
-        "resizable": true,
-        "fullscreen": false
-      }
-    ],
+    "windows": [],
     "security": {
       "csp": null
     }
