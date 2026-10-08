@@ -15,9 +15,9 @@
     <meta name="theme-color" content="#1c120c" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Recreio do Morro • Chapada Diamantina - Bahia | Gestão Agronômica & Distribuição</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = {
+      window.tailwind = window.tailwind || {};
+      window.tailwind.config = {
         darkMode: 'class',
         theme: {
           extend: {
@@ -91,6 +91,7 @@
         }
       }
     </script>
+    <script src="/tailwind.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -111,7 +112,8 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
+      // Só registra Service Worker na Web via HTTP/HTTPS real (não no Desktop/Tauri)
+      if ('serviceWorker' in navigator && !window.__TAURI_INTERNALS__ && location.protocol.indexOf('http') === 0 && location.hostname !== 'tauri.localhost') {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').catch((err) => {
             console.log('SW registration note:', err);
