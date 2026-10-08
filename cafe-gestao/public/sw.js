@@ -1,7 +1,5 @@
-const CACHE_NAME = 'recreio-morro-v1';
+const CACHE_NAME = 'recreio-morro-v3';
 const STATIC_ASSETS = [
-  './',
-  './index.html',
   './manifest.json',
   './logo-principal.png',
   './logo-recreio.png',
@@ -34,7 +32,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Cache First with Network Fallback para recursos estáticos; Network First para dados
+// Network-First para navegação HTML (evita telas presas em versões antigas); Cache com fallback para assets
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
@@ -48,42 +46,62 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // 1. NAVEGAÇÃO / HTML: SEMPRE NETWORK FIRST (busca versão nova primeiro, cache apenas quando 100% offline)
+  if (event.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match(event.request) || caches.match('/index.html') || caches.match('./index.html');
+        })
+    );
+    return;
+  }
+
+  // 2. ASSETS COM HASH NO NOME (assets/*): Cache First
+  if (url.pathname.includes('/assets/')) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((resp) => {
+          if (resp && resp.status === 200) {
+            const clone = resp.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return resp;
+        });
+      })
+    );
+    return;
+  }
+
+  // 3. DEMAIS RECURSOS
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Busca atualização em background se online
         fetch(event.request)
           .then((networkResponse) => {
             if (networkResponse && networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, networkResponse);
-              });
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
             }
           })
           .catch(() => {});
         return cachedResponse;
       }
 
-      return fetch(event.request)
-        .then((networkResponse) => {
-          if (
-            networkResponse &&
-            networkResponse.status === 200 &&
-            (url.origin === location.origin || url.hostname.includes('cdn.tailwindcss.com'))
-          ) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => {
-          // Se estiver totalmente offline e for uma navegação, retorna o index.html em cache
-          if (event.request.mode === 'navigate') {
-            return caches.match('./index.html') || caches.match('./');
-          }
-        });
+      return fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const clone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return networkResponse;
+      });
     })
   );
 });
