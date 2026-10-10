@@ -1,5 +1,18 @@
 import React from 'react';
-import { Beaker, Calculator, History, Sprout, Printer, RotateCcw, Truck, Award, Cloud, WifiOff } from 'lucide-react';
+import {
+  Beaker,
+  Calculator,
+  History,
+  Sprout,
+  Printer,
+  RotateCcw,
+  Truck,
+  Award,
+  Cloud,
+  WifiOff,
+  ClipboardList,
+  FlaskConical,
+} from 'lucide-react';
 import { SyncStatus } from '../services/syncService';
 
 interface HeaderProps {
@@ -23,10 +36,11 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenNuvemModal,
   syncStatus = 'not_configured',
 }) => {
-  // Nota: Aba de insights da comunidade removida conforme solicitação expressa
   const tabsAdubacao = [
     { id: 'calculadora', label: 'Cálculo de Adubação & Fórmulas', icon: Calculator },
-    { id: 'talhoes', label: 'Talhões & Terroir (Chapada)', icon: Sprout },
+    { id: 'talhoes', label: 'Talhões & Vinhedos', icon: Sprout },
+    { id: 'manejo', label: 'Caderno de Campo (Manejo & Profilaxias)', icon: ClipboardList },
+    { id: 'fertilizantes', label: 'Catálogo de Adubos & Marcas', icon: FlaskConical },
     { id: 'analise', label: 'Laudo de Solo & Subsolo', icon: Beaker },
     { id: 'historico', label: 'Histórico & Safras Anteriores', icon: History },
   ];

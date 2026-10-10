@@ -1,5 +1,7 @@
 export type SoilDepth = '0-20cm' | '20-40cm';
 
+export type CulturaTalhao = 'Café' | 'Uva';
+
 export type VariedadeCafe = 
   | 'Catuaí Vermelho 144'
   | 'Catuaí Amarelo 2SL'
@@ -10,7 +12,29 @@ export type VariedadeCafe =
   | 'Catucaí 2SL'
   | 'Geisha'
   | 'Acauã'
-  | 'Outro';
+  | 'Siriema'
+  | 'Paraíso MG 419-1'
+  | 'Outro Café';
+
+export type VariedadeUva =
+  | 'Syrah (Shiraz)'
+  | 'Cabernet Sauvignon'
+  | 'Sauvignon Blanc'
+  | 'Chardonnay'
+  | 'Tempranillo'
+  | 'Malbec'
+  | 'Merlot'
+  | 'Pinot Noir'
+  | 'Touriga Nacional'
+  | 'Cabernet Franc'
+  | 'Petit Verdot'
+  | 'Viognier'
+  | 'Isabel'
+  | 'Niágara Rosada'
+  | 'BRS Vitória'
+  | 'Outra Uva';
+
+export type SistemaConducaoUva = 'Espaldeira' | 'Latada / Pérgola' | 'Ypsilon / Lira' | 'Livre / Outro';
 
 export type ExposicaoSolar = 'Face Norte (Mais Sol)' | 'Face Sul (Mais Ameno)' | 'Face Leste' | 'Face Oeste';
 
@@ -26,7 +50,10 @@ export interface Plot {
   id: string;
   nome: string;
   areaHa: number;
-  variedade: VariedadeCafe;
+  cultura?: CulturaTalhao; // 'Café' (padrão) ou 'Uva'
+  variedade: string; // VariedadeCafe | VariedadeUva | string
+  sistemaConducao?: SistemaConducaoUva;
+  portaEnxerto?: string;
   altitudeM: number;
   exposicaoSolar: ExposicaoSolar;
   espacamentoRuaM: number;
@@ -72,27 +99,80 @@ export interface SoilAnalysis {
 export interface CommercialFertilizer {
   id: string;
   nome: string;
-  tipo: 'simples' | 'formulado' | 'organico';
-  teorN: number; // %
-  teorP2O5: number; // %
-  teorK2O: number; // %
-  teorS?: number; // %
-  teorCa?: number; // %
-  teorMg?: number; // %
-  teorB?: number; // %
-  teorZn?: number; // %
+  marca?: string; // Marca comercial (ex: Yara, Mosaic, Fertipar, Heringer, EuroChem, Biofértil, Própria)
+  tipo: 'simples' | 'formulado' | 'organico' | 'foliar' | 'corretivo';
+  teorN: number; // % N
+  teorP2O5: number; // % P2O5
+  teorK2O: number; // % K2O
+  teorS?: number; // % S
+  teorCa?: number; // % Ca
+  teorMg?: number; // % Mg
+  teorB?: number; // % B
+  teorZn?: number; // % Zn
+  teorCu?: number;
+  teorMn?: number;
   precoSaco50kg?: number; // R$
-  unidade: 'saco50kg' | 'tonelada' | 'kg';
+  unidade: 'saco50kg' | 'saco25kg' | 'tonelada' | 'kg' | 'litro';
   descricao: string;
+}
+
+// ==========================================
+// REGISTROS DE MANEJO: ADUBAÇÃO & PROFILAXIAS
+// ==========================================
+
+export type ModoAplicacaoAdubo = 
+  | 'A lanço na saia'
+  | 'Linha de plantio'
+  | 'Fertirrigação'
+  | 'Foliar'
+  | 'Drench / No pé'
+  | 'Incorporado';
+
+export interface RegistroAdubacao {
+  id: string;
+  plotId: string;
+  data: string; // YYYY-MM-DD
+  aduboNome: string;
+  marca?: string;
+  quantidadeKg: number;
+  doseKgHa?: number;
+  doseGPorPlanta?: number;
+  modoAplicacao: ModoAplicacaoAdubo;
+  estagioFenologico?: string;
+  responsavel?: string;
+  custoTotal?: number;
+  observacoes?: string;
+}
+
+export type TipoTratamentoFitossanitario = 
+  | 'Fungicida'
+  | 'Inseticida'
+  | 'Acaricida'
+  | 'Biológico / Calda'
+  | 'Herbicida'
+  | 'Foliar Nutricional';
+
+export interface RegistroProfilaxia {
+  id: string;
+  plotId: string;
+  data: string; // YYYY-MM-DD
+  tipoTratamento: TipoTratamentoFitossanitario;
+  alvoPragaDoenca: string; // ex: Ferrugem, Oídio, Míldio, Broca, Bicho-mineiro
+  produtoComercial: string;
+  dosagem: string; // ex: 1.5 L/ha, 200 mL/100L
+  volumeCaldaLHa?: number;
+  periodoCarenciaDias?: number;
+  responsavel?: string;
+  observacoes?: string;
 }
 
 export interface HarvestRecord {
   id: string;
   plotId: string;
   safra: string; // ex: "2024/2025"
-  produtividadeSacasHa: number;
+  produtividadeSacasHa: number; // para café: scs/ha; para uva: t/ha (quando cultura == 'Uva')
   sacasTotais: number;
-  pontosSCA?: number; // Qualidade de bebida (fóruns/especiais)
+  pontosSCA?: number; // Qualidade de bebida (fóruns/especiais ou brix da uva)
   perfilSensorial?: string;
   adubacaoRealN: number; // kg/ha aplicados
   adubacaoRealP2O5: number; // kg/ha aplicados
@@ -181,7 +261,9 @@ export interface RecommendationPlan {
   plotId: string;
   safra: string;
   dataCalculo: string;
-  metaSacasHa: number;
+  cultura?: CulturaTalhao;
+  metaSacasHa: number; // Para café: scs/ha; Para uva: t/ha
+  unidadeMeta?: 'scs/ha' | 't/ha';
   cicloBienalidade: BienalidadeCiclo;
   densidadePlantasHa: number;
   calagem: CalagemResult;
@@ -207,14 +289,13 @@ export interface RecommendationPlan {
 }
 
 export interface ParametrosAgronomicos {
-  vDesejado: number; // Meta de V% (60 a 70%, 65% para cafés de alta densidade)
+  vDesejado: number; // Meta de V% (60 a 70%, 65% para cafés de alta densidade, 70% para uvas)
   prntPadrao: number; // PRNT do calcário
-  kgNPorSaca: number; // kg N por saca esperada (padrão 3.0 para alta densidade e vigor vegetativo)
+  kgNPorSaca: number; // kg N por saca esperada (padrão 3.0 no café) ou kg N por tonelada na uva (padrão 6.5)
   fatorFaixaCustom?: number; // Permite forçar fator de faixa se desejado
-  focoAltaQualidade?: boolean; // Ativa ajustes de brix e densidade de grão
+  focoAltaQualidade?: boolean; // Ativa ajustes de brix e densidade
   focoCafesNobres90Plus?: boolean; // Compatibilidade
 }
-
 
 // ==========================================
 // MÓDULO DE DISTRIBUIÇÃO, PRODUTOS & VENDAS

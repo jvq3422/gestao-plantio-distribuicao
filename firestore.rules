@@ -42,6 +42,18 @@ service cloud.firestore {
       allow read, delete: if true;
       allow create, update: if isValidClientWrite();
     }
+    match /recreio_adubacoes/{id} {
+      allow read, delete: if true;
+      allow create, update: if isValidClientWrite();
+    }
+    match /recreio_profilaxias/{id} {
+      allow read, delete: if true;
+      allow create, update: if isValidClientWrite();
+    }
+    match /recreio_fertilizantes/{id} {
+      allow read, delete: if true;
+      allow create, update: if isValidClientWrite();
+    }
     match /recreio_meta/{id} {
       allow read, write: if true;
     }

@@ -4,6 +4,7 @@ import { gerarPlanoRecomendacao } from '../services/agronomyEngine';
 import { analisarHistoricoTalhao } from '../services/historyFeedbackEngine';
 import { StorageService } from '../services/storageService';
 import { exportCalculoExcel, generateCalculoTxt, copyToClipboard } from '../services/exportService';
+import { DecimalInput } from './DecimalInput';
 import {
   Calculator,
   Sparkles,
@@ -17,6 +18,7 @@ import {
   FileSpreadsheet,
   Copy,
   Check,
+  FlaskConical,
 } from 'lucide-react';
 
 interface CalculadoraNutricaoViewProps {
@@ -25,6 +27,7 @@ interface CalculadoraNutricaoViewProps {
   harvests: HarvestRecord[];
   initialPlotId?: string;
   onViewWorkOrder: (plan: RecommendationPlan) => void;
+  onOpenFertilizerCatalog?: () => void;
 }
 
 export const CalculadoraNutricaoView: React.FC<CalculadoraNutricaoViewProps> = ({
@@ -33,6 +36,7 @@ export const CalculadoraNutricaoView: React.FC<CalculadoraNutricaoViewProps> = (
   harvests,
   initialPlotId,
   onViewWorkOrder,
+  onOpenFertilizerCatalog,
 }) => {
   const [selectedPlotId, setSelectedPlotId] = useState<string>(initialPlotId || plots[0]?.id || '');
   const [metaSacas, setMetaSacas] = useState<number>(40);
@@ -57,6 +61,16 @@ export const CalculadoraNutricaoView: React.FC<CalculadoraNutricaoViewProps> = (
   const [showConfigPanel, setShowConfigPanel] = useState<boolean>(false);
 
   const currentPlot = plots.find((p) => p.id === selectedPlotId);
+  const isUva = currentPlot?.cultura === 'Uva';
+
+  // Ajusta meta padrão se alternar entre uva e café
+  useEffect(() => {
+    if (isUva && metaSacas > 35) {
+      setMetaSacas(15);
+    } else if (!isUva && metaSacas < 15) {
+      setMetaSacas(40);
+    }
+  }, [isUva]);
 
   // Análises de solo disponíveis para o talhão
   const analisesDoTalhao = analyses
@@ -131,25 +145,41 @@ export const CalculadoraNutricaoView: React.FC<CalculadoraNutricaoViewProps> = (
           <div>
             <div className="flex items-center space-x-2">
               <span className="text-[10px] font-black text-recreio-gold-900 uppercase tracking-widest bg-recreio-gold-100 border border-recreio-gold-300 px-2.5 py-0.5 rounded-full">
-                Recreio do Morro • Nutrição de Precisão
+                Recreio do Morro • {isUva ? 'Viticultura de Precisão' : 'Nutrição de Precisão'}
               </span>
               <span className="text-[10px] font-bold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full">
                 {currentPlot.altitudeM}m de Altitude
               </span>
+              <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                {isUva ? '🍇 Uva / Vinhedo' : '☕ Café Especial'}
+              </span>
             </div>
             <h2 className="text-2xl font-black text-recreio-espresso-950 mt-1 flex items-center space-x-2 font-playfair">
               <Calculator className="w-6 h-6 text-recreio-gold-600" />
-              <span>Cálculo Nutricional para Cafés Nobres</span>
+              <span>{isUva ? 'Cálculo Nutricional do Vinhedo (Uva)' : 'Cálculo Nutricional para Cafés Nobres'}</span>
             </h2>
             <p className="text-xs text-stone-500 mt-0.5">
-              Fórmula balanceada para preservar aromas florais/frutados, dureza do grão e acidez cristalina da Chapada Diamantina.
+              {isUva
+                ? 'Equilíbrio mineral focado em maturação fenólica, Brix ótimo, prevenção de dessecamento do ráquis e acidez málica/tartárica.'
+                : 'Fórmula balanceada para preservar aromas florais/frutados, dureza do grão e acidez cristalina da Chapada Diamantina.'}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            {onOpenFertilizerCatalog && (
+              <button
+                onClick={onOpenFertilizerCatalog}
+                className="inline-flex items-center space-x-1.5 bg-[#f6eee2] hover:bg-[#ebdcc8] text-recreio-gold-900 border border-recreio-gold-300 text-xs font-bold px-3 py-2 rounded-xl transition-all min-h-[38px]"
+                title="Abrir Catálogo e Cadastro de Adubos de Diversas Marcas"
+              >
+                <FlaskConical className="w-3.5 h-3.5 text-recreio-gold-700" />
+                <span>Catálogo de Adubos</span>
+              </button>
+            )}
+
             <button
               onClick={() => setShowConfigPanel(!showConfigPanel)}
-              className="inline-flex items-center space-x-1.5 bg-[#f6eee2] hover:bg-[#ebdcc8] text-recreio-gold-900 border border-recreio-gold-300 text-xs font-bold px-3 py-2 rounded-xl transition-all min-h-[38px]"
+              className="inline-flex items-center space-x-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 text-xs font-bold px-3 py-2 rounded-xl transition-all min-h-[38px]"
             >
               <Sliders className="w-3.5 h-3.5" />
               <span>{showConfigPanel ? 'Ocultar Parâmetros' : 'Parâmetros Químicos'}</span>
@@ -239,22 +269,22 @@ export const CalculadoraNutricaoView: React.FC<CalculadoraNutricaoViewProps> = (
 
               <div>
                 <label className="font-bold text-stone-700 block mb-1">
-                  Demanda de Nitrogênio (kg N / saca):
+                  Demanda de Nitrogênio ({isUva ? 'kg N / ton' : 'kg N / saca'}):
                 </label>
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="2.0"
-                    max="4.0"
+                  <DecimalInput
                     value={parametros.kgNPorSaca}
-                    onChange={(e) => handleUpdateParametros({ kgNPorSaca: Number(e.target.value) })}
+                    onChange={(val) => handleUpdateParametros({ kgNPorSaca: val })}
                     className="w-full border border-stone-300 rounded-lg px-2.5 py-1 bg-white font-mono font-bold"
                   />
-                  <span className="text-stone-500 font-mono text-[11px]">kg/sc</span>
+                  <span className="text-stone-500 font-mono text-[11px] shrink-0">
+                    {isUva ? 'kg/t' : 'kg/sc'}
+                  </span>
                 </div>
                 <span className="text-[10px] text-stone-500 mt-0.5 block">
-                  3.0 kg evita excesso de vegetação que afeta notas sensoriais
+                  {isUva
+                    ? 'Padrão 6.5 kg N/t para equilíbrio vegetativo e qualidade enológica'
+                    : 'Padrão 3.0 kg evita excesso de vegetação que afeta notas sensoriais'}
                 </span>
               </div>
 
@@ -262,13 +292,9 @@ export const CalculadoraNutricaoView: React.FC<CalculadoraNutricaoViewProps> = (
                 <label className="font-bold text-stone-700 block mb-1">
                   PRNT do Calcário Utilizado (%):
                 </label>
-                <input
-                  type="number"
-                  step="1"
-                  min="60"
-                  max="100"
+                <DecimalInput
                   value={parametros.prntPadrao}
-                  onChange={(e) => handleUpdateParametros({ prntPadrao: Number(e.target.value) })}
+                  onChange={(val) => handleUpdateParametros({ prntPadrao: val })}
                   className="w-full border border-stone-300 rounded-lg px-2.5 py-1 bg-white font-mono font-bold"
                 />
                 <span className="text-[10px] text-stone-500 mt-0.5 block">
@@ -291,55 +317,63 @@ export const CalculadoraNutricaoView: React.FC<CalculadoraNutricaoViewProps> = (
             >
               {plots.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.nome} ({p.variedade} • {p.altitudeM}m)
+                  {p.nome} ({p.cultura || 'Café'} • {p.variedade} • {p.altitudeM}m)
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Target Yield (Meta de Sacas/ha) */}
+          {/* Target Yield (Meta de Sacas/ha ou t/ha) */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-stone-700">Meta Produtiva:</label>
-              <span className="text-xs font-black text-recreio-gold-800">{metaSacas} scs/ha</span>
+              <label className="text-xs font-bold text-stone-700">
+                Meta Produtiva ({isUva ? 't/ha' : 'scs/ha'}):
+              </label>
+              <span className="text-xs font-black text-recreio-gold-800">
+                {metaSacas} {isUva ? 't/ha' : 'scs/ha'}
+              </span>
             </div>
             <div className="flex items-center space-x-2">
               <input
                 type="range"
-                min="15"
-                max="80"
-                step="5"
+                min={isUva ? 5 : 15}
+                max={isUva ? 35 : 80}
+                step={isUva ? 1 : 5}
                 value={metaSacas}
                 onChange={(e) => setMetaSacas(Number(e.target.value))}
                 className="w-full accent-recreio-gold-600 cursor-pointer"
               />
               <span className="text-xs font-mono font-bold bg-stone-100 px-2 py-1 rounded-md text-stone-800 shrink-0">
-                {metaSacas} sc/ha
+                {metaSacas} {isUva ? 't/ha' : 'sc/ha'}
               </span>
             </div>
-            <span className="text-[10px] text-stone-400 mt-1 block">
-              Previsão de safra: {(metaSacas * currentPlot.areaHa).toFixed(0)} sacas no talhão
+            <span className="text-[10px] text-stone-500 mt-1 block">
+              {isUva
+                ? `Previsão: ${(metaSacas * currentPlot.areaHa).toFixed(1)} toneladas de uva no vinhedo`
+                : `Previsão: ${(metaSacas * currentPlot.areaHa).toFixed(0)} sacas de 60kg no talhão`}
             </span>
           </div>
 
           {/* Biennial Cycle */}
           <div>
-            <label className="text-xs font-bold text-stone-700 block mb-1.5">Ciclo Fenológico:</label>
+            <label className="text-xs font-bold text-stone-700 block mb-1.5">
+              {isUva ? 'Ciclo Fenológico / Poda:' : 'Ciclo Fenológico:'}
+            </label>
             <select
               value={cicloBienalidade}
               onChange={(e) => setCicloBienalidade(e.target.value as BienalidadeCiclo)}
               className="w-full text-xs sm:text-sm font-semibold border border-stone-300 rounded-xl px-3 py-2.5 bg-stone-50 focus:ring-2 focus:ring-recreio-gold-500 focus:outline-none"
             >
-              <option value="Carga Alta">Carga Alta (Ano Produtivo On)</option>
-              <option value="Carga Baixa / Descanso">Carga Baixa / Repouso (Ano Off)</option>
-              <option value="Pós-Safra Recorde (Esgotamento)">Pós-Safra Recorde (Restauração)</option>
+              <option value="Carga Alta">Carga Alta (Ano Produtivo Pleno)</option>
+              <option value="Carga Baixa / Descanso">Carga Baixa / Repouso Vegetativo</option>
+              <option value="Pós-Safra Recorde (Esgotamento)">Pós-Safra Recorde (Restauração Nutricional)</option>
               <option value="Ano Normal">Ano Normal / Estável</option>
             </select>
           </div>
 
           {/* Safra */}
           <div>
-            <label className="text-xs font-bold text-stone-700 block mb-1.5">Safra de Aplicação:</label>
+            <label className="text-xs font-bold text-stone-700 block mb-1.5">Safra / Ciclo de Aplicação:</label>
             <input
               type="text"
               value={safra}
@@ -349,7 +383,7 @@ export const CalculadoraNutricaoView: React.FC<CalculadoraNutricaoViewProps> = (
           </div>
         </div>
 
-        {/* Organic Credits & Palha de Café */}
+        {/* Organic Credits & Palha de Café / Composto */}
         <div className="bg-[#fcfaf6] border border-recreio-gold-200/80 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start space-x-3">
             <div className="w-9 h-9 rounded-xl bg-recreio-gold-700 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
@@ -357,13 +391,15 @@ export const CalculadoraNutricaoView: React.FC<CalculadoraNutricaoViewProps> = (
             </div>
             <div>
               <h4 className="text-sm font-bold text-recreio-espresso-950 flex items-center space-x-2">
-                <span>Reciclagem da Palha de Café do Terreiro</span>
+                <span>{isUva ? 'Aporte Orgânico no Vinhedo (Composto / Bagaço)' : 'Reciclagem da Palha de Café do Terreiro'}</span>
                 <span className="text-[10px] bg-recreio-gold-100 text-recreio-gold-900 border border-recreio-gold-300 font-bold px-2 py-0.2 rounded-full">
                   Potássio Orgânico Gratuito
                 </span>
               </h4>
               <p className="text-xs text-stone-600 mt-0.5">
-                A casca residual das cerejas colhidas na Chapada Diamantina retorna à saia do cafeeiro, fornecendo K₂O orgânico e retendo umidade.
+                {isUva
+                  ? 'A matéria orgânica aplicada na faixa da linha das videiras devolve potássio orgânico, retém água e estimula fungos micorrízicos.'
+                  : 'A casca residual das cerejas colhidas na Chapada Diamantina retorna à saia do cafeeiro, fornecendo K₂O orgânico e retendo umidade.'}
               </p>
             </div>
           </div>
@@ -376,18 +412,14 @@ export const CalculadoraNutricaoView: React.FC<CalculadoraNutricaoViewProps> = (
                 onChange={(e) => setUsaPalhaCafe(e.target.checked)}
                 className="w-4 h-4 rounded text-recreio-gold-600 focus:ring-recreio-gold-500"
               />
-              <span>Abater Palha</span>
+              <span>{isUva ? 'Abater Composto' : 'Abater Palha'}</span>
             </label>
             {usaPalhaCafe && (
               <div className="flex items-center space-x-1.5 text-xs font-bold">
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  step="0.5"
+                <DecimalInput
                   value={palhaTonsHa}
-                  onChange={(e) => setPalhaTonsHa(Number(e.target.value))}
-                  className="w-16 px-2 py-1 border border-stone-300 rounded-lg text-center"
+                  onChange={setPalhaTonsHa}
+                  className="w-16 px-2 py-1 border border-stone-300 rounded-lg text-center font-bold"
                 />
                 <span className="text-stone-600">t/ha</span>
               </div>

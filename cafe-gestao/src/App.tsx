@@ -8,6 +8,9 @@ import {
   PontoVenda,
   PrecoNegociado,
   SaidaVenda,
+  RegistroAdubacao,
+  RegistroProfilaxia,
+  CommercialFertilizer,
 } from './types';
 import { StorageService } from './services/storageService';
 import { Header } from './components/Header';
@@ -19,6 +22,8 @@ import { OrdemCampoModal } from './components/OrdemCampoModal';
 import { ModalNovoTalhao } from './components/ModalNovoTalhao';
 import { ModalNovaAnalise } from './components/ModalNovaAnalise';
 import { ModalNovaColheita } from './components/ModalNovaColheita';
+import { ManejoTalhoesView } from './components/ManejoTalhoesView';
+import { GerenciadorFertilizantesModal } from './components/GerenciadorFertilizantesModal';
 import { ModuloDistribuicaoView } from './components/distribution/ModuloDistribuicaoView';
 import { NuvemSyncModal } from './components/NuvemSyncModal';
 import { SyncService, SyncStatus } from './services/syncService';
@@ -31,6 +36,9 @@ export function App() {
   const [plots, setPlots] = useState<Plot[]>([]);
   const [analyses, setAnalyses] = useState<SoilAnalysis[]>([]);
   const [harvests, setHarvests] = useState<HarvestRecord[]>([]);
+  const [adubacoes, setAdubacoes] = useState<RegistroAdubacao[]>([]);
+  const [profilaxias, setProfilaxias] = useState<RegistroProfilaxia[]>([]);
+  const [fertilizers, setFertilizers] = useState<CommercialFertilizer[]>([]);
   const [activeTab, setActiveTab] = useState<string>('calculadora');
   const [calcPlotId, setCalcPlotId] = useState<string>('');
 
@@ -44,6 +52,7 @@ export function App() {
   const [isPlotModalOpen, setIsPlotModalOpen] = useState(false);
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
   const [isHarvestModalOpen, setIsHarvestModalOpen] = useState(false);
+  const [isFertilizerModalOpen, setIsFertilizerModalOpen] = useState(false);
   const [isNuvemModalOpen, setIsNuvemModalOpen] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('not_configured');
   const [preselectedPlotId, setPreselectedPlotId] = useState<string>('');
@@ -90,9 +99,15 @@ export function App() {
     const loadedPlots = StorageService.getPlots();
     const loadedAnalyses = StorageService.getAnalyses();
     const loadedHarvests = StorageService.getHarvests();
+    const loadedAdubacoes = StorageService.getAdubacoes();
+    const loadedProfilaxias = StorageService.getProfilaxias();
+    const loadedFert = StorageService.getFertilizantes();
     setPlots(loadedPlots);
     setAnalyses(loadedAnalyses);
     setHarvests(loadedHarvests);
+    setAdubacoes(loadedAdubacoes);
+    setProfilaxias(loadedProfilaxias);
+    setFertilizers(loadedFert);
     if (loadedPlots.length > 0 && !calcPlotId) {
       setCalcPlotId(loadedPlots[0].id);
     }
@@ -133,6 +148,12 @@ export function App() {
     setIsHarvestModalOpen(true);
   };
 
+  const handleOpenManejo = (plotId?: string) => {
+    if (plotId) setCalcPlotId(plotId);
+    setAmbiente('adubacao');
+    setActiveTab('manejo');
+  };
+
   const handleSavePlot = (newPlot: Plot) => {
     const updated = [...plots, newPlot];
     setPlots(updated);
@@ -171,6 +192,36 @@ export function App() {
     loadAllData();
   };
 
+  const handleAddAdubacao = (reg: RegistroAdubacao) => {
+    StorageService.addAdubacao(reg);
+    loadAllData();
+  };
+
+  const handleDeleteAdubacao = (id: string) => {
+    StorageService.deleteAdubacao(id);
+    loadAllData();
+  };
+
+  const handleAddProfilaxia = (reg: RegistroProfilaxia) => {
+    StorageService.addProfilaxia(reg);
+    loadAllData();
+  };
+
+  const handleDeleteProfilaxia = (id: string) => {
+    StorageService.deleteProfilaxia(id);
+    loadAllData();
+  };
+
+  const handleSaveFertilizer = (fert: CommercialFertilizer) => {
+    StorageService.saveFertilizante(fert);
+    loadAllData();
+  };
+
+  const handleDeleteFertilizer = (id: string) => {
+    StorageService.deleteFertilizante(id);
+    loadAllData();
+  };
+
   const currentWorkOrderPlot = activeWorkOrderPlan
     ? plots.find((p) => p.id === activeWorkOrderPlan.plotId) || null
     : null;
@@ -205,7 +256,36 @@ export function App() {
                 onSelectPlotForCalc={handleSelectPlotForCalc}
                 onOpenNewPlotModal={() => setIsPlotModalOpen(true)}
                 onDeletePlot={handleDeletePlot}
+                onOpenManejo={handleOpenManejo}
               />
+            )}
+
+            {activeTab === 'manejo' && (
+              <ManejoTalhoesView
+                plots={plots}
+                adubacoes={adubacoes}
+                profilaxias={profilaxias}
+                fertilizers={fertilizers}
+                onAddAdubacao={handleAddAdubacao}
+                onDeleteAdubacao={handleDeleteAdubacao}
+                onAddProfilaxia={handleAddProfilaxia}
+                onDeleteProfilaxia={handleDeleteProfilaxia}
+              />
+            )}
+
+            {activeTab === 'fertilizantes' && (
+              <div className="bg-white rounded-3xl p-8 border border-stone-200 text-center space-y-4 max-w-xl mx-auto my-8 shadow-sm">
+                <h3 className="text-xl font-bold text-stone-900">Catálogo & Cadastro de Adubos Comerciais</h3>
+                <p className="text-stone-500 text-xs">
+                  Cadastre fórmulas NPK personalizadas, marcas comerciais (Yara, Mosaic, etc.) e garantias nutricionais.
+                </p>
+                <button
+                  onClick={() => setIsFertilizerModalOpen(true)}
+                  className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs transition-all shadow-md"
+                >
+                  Abrir Gerenciador de Adubos
+                </button>
+              </div>
             )}
 
             {activeTab === 'analise' && (
@@ -224,6 +304,7 @@ export function App() {
                 harvests={harvests}
                 initialPlotId={calcPlotId}
                 onViewWorkOrder={(plan) => setActiveWorkOrderPlan(plan)}
+                onOpenFertilizerCatalog={() => setIsFertilizerModalOpen(true)}
               />
             )}
 
@@ -294,6 +375,17 @@ export function App() {
         plan={activeWorkOrderPlan}
         plot={currentWorkOrderPlot}
         onClose={() => setActiveWorkOrderPlan(null)}
+      />
+
+      <GerenciadorFertilizantesModal
+        isOpen={isFertilizerModalOpen || activeTab === 'fertilizantes'}
+        fertilizers={fertilizers}
+        onClose={() => {
+          setIsFertilizerModalOpen(false);
+          if (activeTab === 'fertilizantes') setActiveTab('calculadora');
+        }}
+        onSaveFertilizer={handleSaveFertilizer}
+        onDeleteFertilizer={handleDeleteFertilizer}
       />
 
       <NuvemSyncModal

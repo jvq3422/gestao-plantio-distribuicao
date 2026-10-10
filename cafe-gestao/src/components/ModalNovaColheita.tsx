@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HarvestRecord, Plot } from '../types';
 import { X, Award } from 'lucide-react';
+import { DecimalInput } from './DecimalInput';
 
 interface ModalNovaColheitaProps {
   isOpen: boolean;
@@ -27,21 +28,33 @@ export const ModalNovaColheita: React.FC<ModalNovaColheitaProps> = ({
   const [adubacaoRealK2O, setAdubacaoRealK2O] = useState<number>(130);
   const [observacoes, setObservacoes] = useState('');
 
+  useEffect(() => {
+    if (preselectedPlotId) {
+      setPlotId(preselectedPlotId);
+    } else if (!plotId && plots.length > 0) {
+      setPlotId(plots[0].id);
+    }
+  }, [preselectedPlotId, plots, plotId]);
+
   if (!isOpen) return null;
 
   const currentPlot = plots.find((p) => p.id === plotId);
-  const sacasTotais = currentPlot ? Math.round(produtividadeSacasHa * currentPlot.areaHa) : 0;
+  const isUva = currentPlot?.cultura === 'Uva';
+  const totalProducao = currentPlot ? (produtividadeSacasHa * currentPlot.areaHa) : 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!plotId) return;
+    if (!plotId) {
+      alert('Por favor, selecione ou cadastre um talhão antes de salvar.');
+      return;
+    }
 
     const newHarvest: HarvestRecord = {
       id: `harv-${Date.now()}`,
       plotId,
       safra,
       produtividadeSacasHa,
-      sacasTotais,
+      sacasTotais: Math.round(totalProducao),
       pontosSCA: pontosSCA > 0 ? pontosSCA : undefined,
       perfilSensorial,
       adubacaoRealN,
@@ -76,24 +89,29 @@ export const ModalNovaColheita: React.FC<ModalNovaColheitaProps> = ({
         {/* Scrollable Form */}
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden text-xs">
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 touch-scroll overscroll-contain">
+            {plots.length === 0 && (
+              <div className="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl">
+                Nenhum talhão cadastrado ainda. Cadastre um talhão antes de registrar a colheita.
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="font-bold text-stone-700 block mb-1">Talhão:</label>
               <select
                 value={plotId}
                 onChange={(e) => setPlotId(e.target.value)}
-                className="w-full border border-stone-300 rounded-xl px-3 py-2 bg-stone-50"
+                className="w-full border border-stone-300 rounded-xl px-3 py-2 bg-stone-50 font-bold"
               >
                 {plots.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.nome}
+                    {p.nome} ({p.cultura || 'Café'})
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="font-bold text-stone-700 block mb-1">Safra:</label>
+              <label className="font-bold text-stone-700 block mb-1">Safra / Ciclo:</label>
               <input
                 type="text"
                 value={safra}
@@ -103,61 +121,57 @@ export const ModalNovaColheita: React.FC<ModalNovaColheitaProps> = ({
             </div>
 
             <div>
-              <label className="font-bold text-stone-700 block mb-1">Produtividade Real (scs/ha):</label>
-              <input
-                type="number"
-                step="0.5"
+              <label className="font-bold text-stone-700 block mb-1">
+                Produtividade Real ({isUva ? 't/ha' : 'scs/ha'}):
+              </label>
+              <DecimalInput
                 value={produtividadeSacasHa}
-                onChange={(e) => setProdutividadeSacasHa(Number(e.target.value))}
-                className="w-full border border-stone-300 rounded-xl px-3 py-2 bg-stone-50"
+                onChange={setProdutividadeSacasHa}
+                className="w-full border border-stone-300 rounded-xl px-3 py-2 bg-stone-50 font-bold"
               />
-              <span className="text-[10px] text-stone-400 mt-1 block">
-                Total no talhão: {sacasTotais} sacas de 60kg
+              <span className="text-[10px] text-stone-500 mt-1 block">
+                Total no talhão: {totalProducao.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} {isUva ? 'toneladas' : 'sacas de 60kg'}
               </span>
             </div>
 
             <div>
-              <label className="font-bold text-stone-700 block mb-1">Nota Sensorial SCA (Opcional):</label>
-              <input
-                type="number"
-                step="0.25"
-                min="0"
-                max="100"
+              <label className="font-bold text-stone-700 block mb-1">
+                {isUva ? 'Grau Brix / Qualidade Uva:' : 'Nota Sensorial SCA (Opcional):'}
+              </label>
+              <DecimalInput
                 value={pontosSCA}
-                onChange={(e) => setPontosSCA(Number(e.target.value))}
-                className="w-full border border-stone-300 rounded-xl px-3 py-2 bg-stone-50"
+                onChange={setPontosSCA}
+                placeholder={isUva ? 'Ex: 22.5' : 'Ex: 85.5'}
+                className="w-full border border-stone-300 rounded-xl px-3 py-2 bg-stone-50 font-bold"
               />
             </div>
           </div>
 
           <div className="border-t border-stone-100 pt-3">
-            <h4 className="font-bold text-stone-900 mb-2">Adubação Realmente Aplicada na Safra (kg/ha):</h4>
+            <h4 className="font-bold text-stone-900 mb-2">Adubação Realmente Aplicada no Ciclo (kg/ha):</h4>
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="font-medium text-stone-600 block mb-1">N Aplicado:</label>
-                <input
-                  type="number"
+                <DecimalInput
                   value={adubacaoRealN}
-                  onChange={(e) => setAdubacaoRealN(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
+                  onChange={setAdubacaoRealN}
+                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 font-bold"
                 />
               </div>
               <div>
                 <label className="font-medium text-stone-600 block mb-1">P₂O₅ Aplicado:</label>
-                <input
-                  type="number"
+                <DecimalInput
                   value={adubacaoRealP2O5}
-                  onChange={(e) => setAdubacaoRealP2O5(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
+                  onChange={setAdubacaoRealP2O5}
+                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 font-bold"
                 />
               </div>
               <div>
                 <label className="font-medium text-stone-600 block mb-1">K₂O Aplicado:</label>
-                <input
-                  type="number"
+                <DecimalInput
                   value={adubacaoRealK2O}
-                  onChange={(e) => setAdubacaoRealK2O(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
+                  onChange={setAdubacaoRealK2O}
+                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 font-bold"
                 />
               </div>
             </div>

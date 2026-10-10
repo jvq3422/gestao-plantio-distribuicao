@@ -9,6 +9,8 @@ import {
   SaidaVenda,
   ParametrosAgronomicos,
   CommercialFertilizer,
+  RegistroAdubacao,
+  RegistroProfilaxia,
 } from '../types';
 import { CATALOGO_FERTILIZANTES } from './fertilizerDatabase';
 
@@ -22,6 +24,8 @@ export const INITIAL_PRODUTOS: Produto[] = [];
 export const INITIAL_PONTOS_VENDA: PontoVenda[] = [];
 export const INITIAL_PRECOS_NEGOCIADOS: PrecoNegociado[] = [];
 export const INITIAL_SAIDAS: SaidaVenda[] = [];
+export const INITIAL_ADUBACOES: RegistroAdubacao[] = [];
+export const INITIAL_PROFILAXIAS: RegistroProfilaxia[] = [];
 
 // ==========================================
 // PARÂMETROS AGRONÔMICOS DINÂMICOS (SEM HARDCODING)
@@ -29,7 +33,7 @@ export const INITIAL_SAIDAS: SaidaVenda[] = [];
 export const DEFAULT_PARAMETROS: ParametrosAgronomicos = {
   vDesejado: 65, // Meta padrão de 65% V (ajustável no painel)
   prntPadrao: 85,
-  kgNPorSaca: 3.0, // 3.0 kg N/sc para equilíbrio nutricional e vigor da planta
+  kgNPorSaca: 3.0, // 3.0 kg N/sc para café ou 6.5 kg N/t para uva
   focoAltaQualidade: true,
   focoCafesNobres90Plus: true,
 };
@@ -45,6 +49,8 @@ export class StorageService {
   private static KEY_PDVS = 'recreio_clean_pdvs_v1';
   private static KEY_PRECOS = 'recreio_clean_precos_v1';
   private static KEY_SAIDAS = 'recreio_clean_saidas_v1';
+  private static KEY_ADUBACOES = 'recreio_clean_adubacoes_v1';
+  private static KEY_PROFILAXIAS = 'recreio_clean_profilaxias_v1';
 
   private static syncHook: ((collection: string, entity: any) => void) | null = null;
   private static deleteHook: ((collection: string, id: string) => void) | null = null;
@@ -95,6 +101,24 @@ export class StorageService {
     this.deleteHook?.('recreio_saidas', id);
   }
 
+  static deleteAdubacao(id: string): void {
+    const adubacoes = this.getAdubacoes().filter((a) => a.id !== id);
+    this.saveAdubacoes(adubacoes, true);
+    this.deleteHook?.('recreio_adubacoes', id);
+  }
+
+  static deleteProfilaxia(id: string): void {
+    const profilaxias = this.getProfilaxias().filter((p) => p.id !== id);
+    this.saveProfilaxias(profilaxias, true);
+    this.deleteHook?.('recreio_profilaxias', id);
+  }
+
+  static deleteFertilizante(id: string): void {
+    const ferts = this.getFertilizantes().filter((f) => f.id !== id);
+    this.saveFertilizantes(ferts, true);
+    this.deleteHook?.('recreio_fertilizantes', id);
+  }
+
   // --- AGRONOMIA & PARÂMETROS DINÂMICOS ---
   static getParametros(): ParametrosAgronomicos {
     const raw = localStorage.getItem(this.KEY_PARAMETROS);
@@ -116,20 +140,82 @@ export class StorageService {
   static getFertilizantes(): CommercialFertilizer[] {
     const raw = localStorage.getItem(this.KEY_FERTILIZANTES);
     if (!raw) {
-      this.saveFertilizantes(CATALOGO_FERTILIZANTES);
+      this.saveFertilizantes(CATALOGO_FERTILIZANTES, true);
       return CATALOGO_FERTILIZANTES;
     }
     try {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : CATALOGO_FERTILIZANTES;
     } catch {
       return CATALOGO_FERTILIZANTES;
     }
   }
 
-  static saveFertilizantes(fert: CommercialFertilizer[]): void {
+  static saveFertilizantes(fert: CommercialFertilizer[], skipSync = false): void {
     localStorage.setItem(this.KEY_FERTILIZANTES, JSON.stringify(fert));
+    if (!skipSync) {
+      fert.forEach((f) => this.syncHook?.('recreio_fertilizantes', f));
+    }
   }
 
+  static saveFertilizante(fert: CommercialFertilizer): void {
+    const ferts = this.getFertilizantes().filter((f) => f.id !== fert.id);
+    ferts.unshift(fert);
+    this.saveFertilizantes(ferts);
+  }
+
+  // --- REGISTROS DE MANEJO: ADUBAÇÕES E PROFILAXIAS ---
+  static getAdubacoes(): RegistroAdubacao[] {
+    const raw = localStorage.getItem(this.KEY_ADUBACOES);
+    if (!raw) {
+      return INITIAL_ADUBACOES;
+    }
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return INITIAL_ADUBACOES;
+    }
+  }
+
+  static saveAdubacoes(adubacoes: RegistroAdubacao[], skipSync = false): void {
+    localStorage.setItem(this.KEY_ADUBACOES, JSON.stringify(adubacoes));
+    if (!skipSync) {
+      adubacoes.forEach((a) => this.syncHook?.('recreio_adubacoes', a));
+    }
+  }
+
+  static addAdubacao(reg: RegistroAdubacao): void {
+    const adubacoes = this.getAdubacoes().filter((a) => a.id !== reg.id);
+    adubacoes.unshift(reg);
+    this.saveAdubacoes(adubacoes);
+  }
+
+  static getProfilaxias(): RegistroProfilaxia[] {
+    const raw = localStorage.getItem(this.KEY_PROFILAXIAS);
+    if (!raw) {
+      return INITIAL_PROFILAXIAS;
+    }
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return INITIAL_PROFILAXIAS;
+    }
+  }
+
+  static saveProfilaxias(profilaxias: RegistroProfilaxia[], skipSync = false): void {
+    localStorage.setItem(this.KEY_PROFILAXIAS, JSON.stringify(profilaxias));
+    if (!skipSync) {
+      profilaxias.forEach((p) => this.syncHook?.('recreio_profilaxias', p));
+    }
+  }
+
+  static addProfilaxia(reg: RegistroProfilaxia): void {
+    const profilaxias = this.getProfilaxias().filter((p) => p.id !== reg.id);
+    profilaxias.unshift(reg);
+    this.saveProfilaxias(profilaxias);
+  }
+
+  // --- TALHÕES ---
   static getPlots(): Plot[] {
     const raw = localStorage.getItem(this.KEY_PLOTS);
     if (!raw) {
@@ -150,6 +236,7 @@ export class StorageService {
     }
   }
 
+  // --- LAUDOS DE SOLO ---
   static getAnalyses(): SoilAnalysis[] {
     const raw = localStorage.getItem(this.KEY_ANALYSES);
     if (!raw) {
@@ -170,6 +257,7 @@ export class StorageService {
     }
   }
 
+  // --- COLHEITAS ---
   static getHarvests(): HarvestRecord[] {
     const raw = localStorage.getItem(this.KEY_HARVESTS);
     if (!raw) {
@@ -269,23 +357,22 @@ export class StorageService {
     }
   }
 
-  static getPrecoParaPdv(pontoVendaId: string, produtoId: string): number {
-    const precos = this.getPrecosNegociados();
-    const encontrado = precos.find(
-      (p) => p.pontoVendaId === pontoVendaId && p.produtoId === produtoId
-    );
-    if (encontrado) return encontrado.preco;
-
-    const produto = this.getProdutos().find((p) => p.id === produtoId);
-    return produto?.precoPadrao ?? 0;
-  }
-
   static setPrecoNegociado(pontoVendaId: string, produtoId: string, preco: number): void {
     const precos = this.getPrecosNegociados().filter(
       (p) => !(p.pontoVendaId === pontoVendaId && p.produtoId === produtoId)
     );
     precos.push({ pontoVendaId, produtoId, preco });
     this.savePrecosNegociados(precos);
+  }
+
+  static getPrecoParaPdv(pontoVendaId: string, produtoId: string): number {
+    const precos = this.getPrecosNegociados();
+    const neg = precos.find((p) => p.pontoVendaId === pontoVendaId && p.produtoId === produtoId);
+    if (neg) return neg.preco;
+
+    const produtos = this.getProdutos();
+    const prod = produtos.find((p) => p.id === produtoId);
+    return prod ? prod.precoPadrao : 0;
   }
 
   static getSaidas(): SaidaVenda[] {
@@ -313,15 +400,19 @@ export class StorageService {
     saidas.unshift(saida);
     this.saveSaidas(saidas);
 
-    // Abater estoque dos produtos vendidos
+    // Baixa automática de estoque
     const produtos = this.getProdutos();
+    let teveBaixa = false;
     saida.itens.forEach((item) => {
       const prod = produtos.find((p) => p.id === item.produtoId);
       if (prod) {
         prod.estoqueDisponivel = Math.max(0, prod.estoqueDisponivel - item.quantidade);
+        teveBaixa = true;
       }
     });
-    this.saveProdutos(produtos);
+    if (teveBaixa) {
+      this.saveProdutos(produtos);
+    }
   }
 
   static atualizarStatusPagamento(saidaId: string, novoStatus: SaidaVenda['statusPagamento']): void {
@@ -340,8 +431,10 @@ export class StorageService {
     this.savePlots([], true);
     this.saveAnalyses([], true);
     this.saveHarvests([], true);
+    this.saveAdubacoes([], true);
+    this.saveProfilaxias([], true);
     this.saveParametros(DEFAULT_PARAMETROS);
-    this.saveFertilizantes(CATALOGO_FERTILIZANTES);
+    this.saveFertilizantes(CATALOGO_FERTILIZANTES, true);
     this.saveProdutos([], true);
     this.savePontosVenda([], true);
     this.savePrecosNegociados([], true);

@@ -94,7 +94,10 @@ export class SyncService {
       getDocs(collection(db, 'recreio_pdvs')),
       getDocs(collection(db, 'recreio_precos')),
       getDocs(collection(db, 'recreio_saidas')),
-    ]).then(([plotsRes, analysesRes, harvestsRes, produtosRes, pdvsRes, precosRes, saidasRes]) => {
+      getDocs(collection(db, 'recreio_adubacoes')),
+      getDocs(collection(db, 'recreio_profilaxias')),
+      getDocs(collection(db, 'recreio_fertilizantes')),
+    ]).then(([plotsRes, analysesRes, harvestsRes, produtosRes, pdvsRes, precosRes, saidasRes, adubRes, profRes, fertRes]) => {
       if (this.isClearing) return;
       let hasUpdates = false;
 
@@ -145,6 +148,29 @@ export class SyncService {
         saidasRes.value.forEach((d) => remoteSaidas.push(d.data() as SaidaVenda));
         StorageService.saveSaidas(remoteSaidas, true);
         hasUpdates = true;
+      }
+
+      if (adubRes.status === 'fulfilled') {
+        const remoteAdub: any[] = [];
+        adubRes.value.forEach((d) => remoteAdub.push(d.data()));
+        StorageService.saveAdubacoes(remoteAdub, true);
+        hasUpdates = true;
+      }
+
+      if (profRes.status === 'fulfilled') {
+        const remoteProf: any[] = [];
+        profRes.value.forEach((d) => remoteProf.push(d.data()));
+        StorageService.saveProfilaxias(remoteProf, true);
+        hasUpdates = true;
+      }
+
+      if (fertRes.status === 'fulfilled') {
+        const remoteFert: any[] = [];
+        fertRes.value.forEach((d) => remoteFert.push(d.data()));
+        if (remoteFert.length > 0) {
+          StorageService.saveFertilizantes(remoteFert, true);
+          hasUpdates = true;
+        }
       }
 
       if (hasUpdates) {
@@ -264,6 +290,47 @@ export class SyncService {
       (err) => console.warn('[Sync] Erro snapshot saidas:', err)
     );
 
+    // 8. Adubações (Caderno de Campo)
+    const unsubAdubacoes = onSnapshot(
+      collection(db, 'recreio_adubacoes'),
+      (snapshot) => {
+        if (this.isClearing) return;
+        const remoteAdub: any[] = [];
+        snapshot.forEach((d) => remoteAdub.push(d.data()));
+        StorageService.saveAdubacoes(remoteAdub, true);
+        onDataUpdated();
+      },
+      (err) => console.warn('[Sync] Erro snapshot adubacoes:', err)
+    );
+
+    // 9. Profilaxias & Fitossanidade
+    const unsubProfilaxias = onSnapshot(
+      collection(db, 'recreio_profilaxias'),
+      (snapshot) => {
+        if (this.isClearing) return;
+        const remoteProf: any[] = [];
+        snapshot.forEach((d) => remoteProf.push(d.data()));
+        StorageService.saveProfilaxias(remoteProf, true);
+        onDataUpdated();
+      },
+      (err) => console.warn('[Sync] Erro snapshot profilaxias:', err)
+    );
+
+    // 10. Fertilizantes & Fórmulas
+    const unsubFertilizantes = onSnapshot(
+      collection(db, 'recreio_fertilizantes'),
+      (snapshot) => {
+        if (this.isClearing) return;
+        const remoteFert: any[] = [];
+        snapshot.forEach((d) => remoteFert.push(d.data()));
+        if (remoteFert.length > 0) {
+          StorageService.saveFertilizantes(remoteFert, true);
+          onDataUpdated();
+        }
+      },
+      (err) => console.warn('[Sync] Erro snapshot fertilizantes:', err)
+    );
+
     this.unsubscribers = [
       unsubMeta,
       unsubPlots,
@@ -273,6 +340,9 @@ export class SyncService {
       unsubPdvs,
       unsubPrecos,
       unsubSaidas,
+      unsubAdubacoes,
+      unsubProfilaxias,
+      unsubFertilizantes,
       () => {
         window.removeEventListener('online', handleOnline);
         window.removeEventListener('offline', handleOffline);
@@ -418,6 +488,36 @@ export class SyncService {
         }, { merge: true });
       });
 
+      // Adubações
+      const adubacoes = StorageService.getAdubacoes();
+      adubacoes.forEach((a) => {
+        batch.set(doc(db, 'recreio_adubacoes', a.id), {
+          ...a,
+          syncVersion: SYNC_PROTOCOL_VERSION,
+          clientTimestamp,
+        }, { merge: true });
+      });
+
+      // Profilaxias
+      const profilaxias = StorageService.getProfilaxias();
+      profilaxias.forEach((p) => {
+        batch.set(doc(db, 'recreio_profilaxias', p.id), {
+          ...p,
+          syncVersion: SYNC_PROTOCOL_VERSION,
+          clientTimestamp,
+        }, { merge: true });
+      });
+
+      // Fertilizantes
+      const ferts = StorageService.getFertilizantes();
+      ferts.forEach((f) => {
+        batch.set(doc(db, 'recreio_fertilizantes', f.id), {
+          ...f,
+          syncVersion: SYNC_PROTOCOL_VERSION,
+          clientTimestamp,
+        }, { merge: true });
+      });
+
       await batch.commit();
       this.notifyStatus('online');
       return {
@@ -452,6 +552,9 @@ export class SyncService {
       'recreio_pdvs',
       'recreio_precos',
       'recreio_saidas',
+      'recreio_adubacoes',
+      'recreio_profilaxias',
+      'recreio_fertilizantes',
     ];
 
     try {

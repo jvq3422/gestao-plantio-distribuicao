@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SoilAnalysis, Plot, SoilDepth } from '../types';
 import { calcularIndicesSolo } from '../services/agronomyEngine';
-import { X, Beaker } from 'lucide-react';
+import { X, Beaker, AlertTriangle } from 'lucide-react';
+import { DecimalInput } from './DecimalInput';
 
 interface ModalNovaAnaliseProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface ModalNovaAnaliseProps {
   preselectedPlotId?: string;
   onClose: () => void;
   onSave: (analysis: SoilAnalysis) => void;
+  onOpenNewPlotModal?: () => void;
 }
 
 export const ModalNovaAnalise: React.FC<ModalNovaAnaliseProps> = ({
@@ -17,6 +19,7 @@ export const ModalNovaAnalise: React.FC<ModalNovaAnaliseProps> = ({
   preselectedPlotId,
   onClose,
   onSave,
+  onOpenNewPlotModal,
 }) => {
   const [plotId, setPlotId] = useState<string>(preselectedPlotId || plots[0]?.id || '');
   const [dataColeta, setDataColeta] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -34,6 +37,21 @@ export const ModalNovaAnalise: React.FC<ModalNovaAnaliseProps> = ({
   const [b, setB] = useState<number>(0.9);
   const [zn, setZn] = useState<number>(2.2);
   const [s, setS] = useState<number>(12);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Sincroniza o plotId sempre que o modal abre ou os talhões mudam
+  useEffect(() => {
+    if (isOpen) {
+      setErrorMsg(null);
+      if (preselectedPlotId && plots.some((p) => p.id === preselectedPlotId)) {
+        setPlotId(preselectedPlotId);
+      } else if (plots.length > 0 && (!plotId || !plots.some((p) => p.id === plotId))) {
+        setPlotId(plots[0].id);
+      } else if (plots.length === 0) {
+        setPlotId('');
+      }
+    }
+  }, [isOpen, preselectedPlotId, plots]);
 
   if (!isOpen) return null;
 
@@ -48,7 +66,15 @@ export const ModalNovaAnalise: React.FC<ModalNovaAnaliseProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!plotId) return;
+
+    if (!plotId) {
+      if (plots.length === 0) {
+        setErrorMsg('É necessário cadastrar pelo menos um talhão antes de salvar o laudo de solo.');
+      } else {
+        setErrorMsg('Por favor, selecione um talhão na lista.');
+      }
+      return;
+    }
 
     const novaAnalise: SoilAnalysis = {
       id: `soil-${Date.now()}`,
@@ -75,6 +101,8 @@ export const ModalNovaAnalise: React.FC<ModalNovaAnaliseProps> = ({
     onClose();
   };
 
+  const selectedPlot = plots.find((p) => p.id === plotId);
+
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
       <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-2xl w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col shadow-2xl border border-stone-200 overflow-hidden my-auto sm:my-8">
@@ -84,7 +112,14 @@ export const ModalNovaAnalise: React.FC<ModalNovaAnaliseProps> = ({
             <div className="w-8 h-8 rounded-lg bg-recreio-gold-100 text-recreio-gold-900 border border-recreio-gold-200 flex items-center justify-center font-bold">
               <Beaker className="w-5 h-5" />
             </div>
-            <h3 className="font-extrabold text-base sm:text-lg text-stone-900">Novo Laudo de Solo</h3>
+            <div>
+              <h3 className="font-extrabold text-base sm:text-lg text-stone-900 font-playfair">Novo Laudo de Solo</h3>
+              {selectedPlot && (
+                <p className="text-[11px] text-stone-500">
+                  Talhão: <strong>{selectedPlot.nome}</strong> ({selectedPlot.cultura || 'Café'} • {selectedPlot.variedade})
+                </p>
+              )}
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -97,202 +132,232 @@ export const ModalNovaAnalise: React.FC<ModalNovaAnaliseProps> = ({
         {/* Scrollable Form */}
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden text-xs">
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 touch-scroll overscroll-contain">
+            {errorMsg && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 flex items-start space-x-2 text-xs">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+                <div className="flex-1">
+                  <p className="font-bold">{errorMsg}</p>
+                  {plots.length === 0 && onOpenNewPlotModal && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        onOpenNewPlotModal();
+                      }}
+                      className="mt-2 px-3 py-1 bg-rose-600 text-white rounded-lg font-bold text-xs hover:bg-rose-700"
+                    >
+                      Cadastrar Talhão Agora
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {plots.length === 0 && !errorMsg && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 flex items-start space-x-2 text-xs">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
+                <div className="flex-1">
+                  <p className="font-bold">Nenhum talhão cadastrado no sistema.</p>
+                  <p className="text-[11px] text-amber-700 mt-0.5">
+                    Cadastre um talhão primeiro para poder vincular os laudos de análise.
+                  </p>
+                  {onOpenNewPlotModal && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        onOpenNewPlotModal();
+                      }}
+                      className="mt-2 px-3 py-1 bg-amber-700 text-white rounded-lg font-bold text-xs hover:bg-amber-800"
+                    >
+                      Cadastrar Talhão
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="font-bold text-stone-700 block mb-1">Talhão:</label>
-              <select
-                value={plotId}
-                onChange={(e) => setPlotId(e.target.value)}
-                className="w-full border border-stone-300 rounded-xl px-3 py-2 bg-stone-50"
-              >
-                {plots.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="font-bold text-stone-700 block mb-1">Profundidade:</label>
-              <select
-                value={profundidade}
-                onChange={(e) => setProfundidade(e.target.value as SoilDepth)}
-                className="w-full border border-stone-300 rounded-xl px-3 py-2 bg-stone-50"
-              >
-                <option value="0-20cm">0 - 20 cm (Rotina / Calagem)</option>
-                <option value="20-40cm">20 - 40 cm (Gessagem / Subsolo)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="font-bold text-stone-700 block mb-1">Data da Amostragem:</label>
-              <input
-                type="date"
-                value={dataColeta}
-                onChange={(e) => setDataColeta(e.target.value)}
-                className="w-full border border-stone-300 rounded-xl px-3 py-2 bg-stone-50"
-              />
-            </div>
-          </div>
-
-          <div className="border-t border-stone-100 pt-3">
-            <h4 className="font-bold text-stone-900 mb-2">Macronutrientes e Acidez:</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div>
-                <label className="font-medium text-stone-600 block mb-1">pH em CaCl₂:</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={ph}
-                  onChange={(e) => setPh(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
-                />
+                <label className="font-bold text-stone-700 block mb-1">Talhão de Destino:</label>
+                <select
+                  value={plotId}
+                  onChange={(e) => {
+                    setPlotId(e.target.value);
+                    setErrorMsg(null);
+                  }}
+                  required
+                  className="w-full border border-stone-300 rounded-xl px-3 py-2 bg-stone-50 font-medium text-xs min-h-[40px]"
+                >
+                  {plots.length === 0 && <option value="">Nenhum talhão disponível</option>}
+                  {plots.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nome} ({p.cultura || 'Café'} • {p.variedade})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
-                <label className="font-medium text-stone-600 block mb-1">M.O. (g/dm³):</label>
-                <input
-                  type="number"
-                  value={mo}
-                  onChange={(e) => setMo(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
-                />
+                <label className="font-bold text-stone-700 block mb-1">Profundidade da Camada:</label>
+                <select
+                  value={profundidade}
+                  onChange={(e) => setProfundidade(e.target.value as SoilDepth)}
+                  className="w-full border border-stone-300 rounded-xl px-3 py-2 bg-stone-50 font-medium text-xs min-h-[40px]"
+                >
+                  <option value="0-20cm">0 - 20 cm (Rotina / Calagem)</option>
+                  <option value="20-40cm">20 - 40 cm (Subsolo / Gessagem)</option>
+                </select>
               </div>
 
               <div>
-                <label className="font-medium text-stone-600 block mb-1">Fósforo P (mg/dm³):</label>
+                <label className="font-bold text-stone-700 block mb-1">Data da Amostragem:</label>
                 <input
-                  type="number"
-                  step="0.5"
-                  value={p}
-                  onChange={(e) => setP(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
-                />
-              </div>
-
-              <div>
-                <label className="font-medium text-stone-600 block mb-1">K (cmolc/dm³):</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={k}
-                  onChange={(e) => setK(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
-                />
-              </div>
-
-              <div>
-                <label className="font-medium text-stone-600 block mb-1">Ca (cmolc/dm³):</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={ca}
-                  onChange={(e) => setCa(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
-                />
-              </div>
-
-              <div>
-                <label className="font-medium text-stone-600 block mb-1">Mg (cmolc/dm³):</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={mg}
-                  onChange={(e) => setMg(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
-                />
-              </div>
-
-              <div>
-                <label className="font-medium text-stone-600 block mb-1">Alumínio Al (cmolc):</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={al}
-                  onChange={(e) => setAl(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
-                />
-              </div>
-
-              <div>
-                <label className="font-medium text-stone-600 block mb-1">H+Al (cmolc/dm³):</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={h_al}
-                  onChange={(e) => setH_al(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
+                  type="date"
+                  value={dataColeta}
+                  onChange={(e) => setDataColeta(e.target.value)}
+                  className="w-full border border-stone-300 rounded-xl px-3 py-2 bg-stone-50 text-xs min-h-[40px]"
                 />
               </div>
             </div>
-          </div>
 
-          <div className="border-t border-stone-100 pt-3">
-            <h4 className="font-bold text-stone-900 mb-2">Micronutrientes e Textura:</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div>
-                <label className="font-medium text-stone-600 block mb-1">Argila (%):</label>
-                <input
-                  type="number"
-                  value={argilaPercent}
-                  onChange={(e) => setArgilaPercent(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
-                />
+            <div className="border-t border-stone-100 pt-3">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-bold text-stone-900 text-xs">Macronutrientes e Acidez (Valores Decimais aceitos com vírgula ou ponto):</h4>
               </div>
-              <div>
-                <label className="font-medium text-stone-600 block mb-1">Boro B (mg/dm³):</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={b}
-                  onChange={(e) => setB(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
-                />
-              </div>
-              <div>
-                <label className="font-medium text-stone-600 block mb-1">Zinco Zn (mg/dm³):</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={zn}
-                  onChange={(e) => setZn(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
-                />
-              </div>
-              <div>
-                <label className="font-medium text-stone-600 block mb-1">Enxofre S (mg/dm³):</label>
-                <input
-                  type="number"
-                  step="1"
-                  value={s}
-                  onChange={(e) => setS(Number(e.target.value))}
-                  className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5"
-                />
-              </div>
-            </div>
-          </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div>
+                  <label className="font-medium text-stone-600 block mb-1">pH em CaCl₂:</label>
+                  <DecimalInput
+                    value={ph}
+                    onChange={setPh}
+                    className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono bg-white focus:ring-1 focus:ring-recreio-gold-600"
+                  />
+                </div>
 
-          {/* Cálculos Calculados em Tempo Real */}
-          <div className="bg-stone-50 p-3 rounded-xl border border-stone-200 grid grid-cols-4 gap-2 text-center text-xs">
-            <div>
-              <span className="text-stone-400 block text-[10px] font-bold">SB</span>
-              <strong>{preview.sb}</strong>
+                <div>
+                  <label className="font-medium text-stone-600 block mb-1">M.O. (g/dm³):</label>
+                  <DecimalInput
+                    value={mo}
+                    onChange={setMo}
+                    className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono bg-white focus:ring-1 focus:ring-recreio-gold-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium text-stone-600 block mb-1">Fósforo P (mg/dm³):</label>
+                  <DecimalInput
+                    value={p}
+                    onChange={setP}
+                    className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono bg-white focus:ring-1 focus:ring-recreio-gold-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium text-stone-600 block mb-1">K (cmolc/dm³):</label>
+                  <DecimalInput
+                    value={k}
+                    onChange={setK}
+                    className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono bg-white focus:ring-1 focus:ring-recreio-gold-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium text-stone-600 block mb-1">Cálcio Ca (cmolc):</label>
+                  <DecimalInput
+                    value={ca}
+                    onChange={setCa}
+                    className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono bg-white focus:ring-1 focus:ring-recreio-gold-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium text-stone-600 block mb-1">Magnésio Mg (cmolc):</label>
+                  <DecimalInput
+                    value={mg}
+                    onChange={setMg}
+                    className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono bg-white focus:ring-1 focus:ring-recreio-gold-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium text-stone-600 block mb-1">Alumínio Al (cmolc):</label>
+                  <DecimalInput
+                    value={al}
+                    onChange={setAl}
+                    className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono bg-white focus:ring-1 focus:ring-recreio-gold-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium text-stone-600 block mb-1">H+Al (cmolc/dm³):</label>
+                  <DecimalInput
+                    value={h_al}
+                    onChange={setH_al}
+                    className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono bg-white focus:ring-1 focus:ring-recreio-gold-600"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <span className="text-stone-400 block text-[10px] font-bold">CTC (T)</span>
-              <strong>{preview.ctcTotal}</strong>
+
+            <div className="border-t border-stone-100 pt-3">
+              <h4 className="font-bold text-stone-900 mb-2 text-xs">Micronutrientes e Textura:</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div>
+                  <label className="font-medium text-stone-600 block mb-1">Argila (%):</label>
+                  <DecimalInput
+                    value={argilaPercent}
+                    onChange={setArgilaPercent}
+                    className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="font-medium text-stone-600 block mb-1">Boro B (mg/dm³):</label>
+                  <DecimalInput
+                    value={b}
+                    onChange={setB}
+                    className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="font-medium text-stone-600 block mb-1">Zinco Zn (mg/dm³):</label>
+                  <DecimalInput
+                    value={zn}
+                    onChange={setZn}
+                    className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="font-medium text-stone-600 block mb-1">Enxofre S (mg/dm³):</label>
+                  <DecimalInput
+                    value={s}
+                    onChange={setS}
+                    className="w-full border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono bg-white"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <span className="text-stone-400 block text-[10px] font-bold">V% Calculado</span>
-              <strong className={preview.vPercent && preview.vPercent >= 60 ? 'text-folha-700' : 'text-amber-600'}>
-                {preview.vPercent}%
-              </strong>
-            </div>
-            <div>
-              <span className="text-stone-400 block text-[10px] font-bold">Ca : Mg</span>
-              <strong>{preview.relacaoCaMg}:1</strong>
-            </div>
+
+            {/* Cálculos Calculados em Tempo Real */}
+            <div className="bg-stone-50 p-3 rounded-xl border border-stone-200 grid grid-cols-4 gap-2 text-center text-xs">
+              <div>
+                <span className="text-stone-400 block text-[10px] font-bold">SB</span>
+                <strong className="font-mono">{preview.sb}</strong>
+              </div>
+              <div>
+                <span className="text-stone-400 block text-[10px] font-bold">CTC (T)</span>
+                <strong className="font-mono">{preview.ctcTotal}</strong>
+              </div>
+              <div>
+                <span className="text-stone-400 block text-[10px] font-bold">V% Calculado</span>
+                <strong className={`font-mono ${preview.vPercent && preview.vPercent >= 60 ? 'text-emerald-700' : 'text-amber-600'}`}>
+                  {preview.vPercent}%
+                </strong>
+              </div>
+              <div>
+                <span className="text-stone-400 block text-[10px] font-bold">Ca : Mg</span>
+                <strong className="font-mono">{preview.relacaoCaMg}:1</strong>
+              </div>
             </div>
           </div>
 
@@ -307,10 +372,11 @@ export const ModalNovaAnalise: React.FC<ModalNovaAnaliseProps> = ({
             </button>
             <button
               type="submit"
-              style={{ backgroundColor: '#964f0b', color: '#ffffff' }}
-              className="px-5 py-2.5 rounded-xl bg-recreio-gold-700 hover:bg-recreio-gold-800 text-white font-bold transition-all shadow-md min-h-[44px] active:scale-95"
+              disabled={plots.length === 0}
+              style={{ backgroundColor: plots.length === 0 ? '#9ca3af' : '#964f0b', color: '#ffffff' }}
+              className="px-5 py-2.5 rounded-xl text-white font-bold transition-all shadow-md min-h-[44px] active:scale-95 disabled:cursor-not-allowed"
             >
-              Salvar Análise
+              Salvar Laudo de Solo
             </button>
           </div>
         </form>
