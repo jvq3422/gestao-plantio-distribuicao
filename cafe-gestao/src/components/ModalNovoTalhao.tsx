@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Plot,
   CulturaTalhao,
@@ -13,6 +13,7 @@ import { DecimalInput } from './DecimalInput';
 
 interface ModalNovoTalhaoProps {
   isOpen: boolean;
+  plotToEdit?: Plot | null;
   onClose: () => void;
   onSave: (plot: Plot) => void;
 }
@@ -51,7 +52,7 @@ export const VARIEDADES_UVA: VariedadeUva[] = [
   'Outra Uva',
 ];
 
-export const ModalNovoTalhao: React.FC<ModalNovoTalhaoProps> = ({ isOpen, onClose, onSave }) => {
+export const ModalNovoTalhao: React.FC<ModalNovoTalhaoProps> = ({ isOpen, plotToEdit, onClose, onSave }) => {
   const [cultura, setCultura] = useState<CulturaTalhao>('Café');
   const [nome, setNome] = useState('');
   const [areaHa, setAreaHa] = useState<number>(3.5);
@@ -70,31 +71,96 @@ export const ModalNovoTalhao: React.FC<ModalNovoTalhaoProps> = ({ isOpen, onClos
   const [observacoesTerroir, setObservacoesTerroir] = useState('');
   const [irrigado, setIrrigado] = useState(true);
 
+  useEffect(() => {
+    if (plotToEdit) {
+      const c = plotToEdit.cultura || 'Café';
+      setCultura(c);
+      setNome(plotToEdit.nome || '');
+      setAreaHa(plotToEdit.areaHa || 3.5);
+
+      if (c === 'Uva') {
+        if (VARIEDADES_UVA.includes(plotToEdit.variedade as any)) {
+          setVariedadeUva(plotToEdit.variedade as any);
+          setIsCustomVariedade(false);
+          setCustomVariedade('');
+        } else {
+          setVariedadeUva('Outra Uva');
+          setIsCustomVariedade(true);
+          setCustomVariedade(plotToEdit.variedade);
+        }
+      } else {
+        if (VARIEDADES_CAFE.includes(plotToEdit.variedade as any)) {
+          setVariedadeCafe(plotToEdit.variedade as any);
+          setIsCustomVariedade(false);
+          setCustomVariedade('');
+        } else {
+          setVariedadeCafe('Outro Café');
+          setIsCustomVariedade(true);
+          setCustomVariedade(plotToEdit.variedade);
+        }
+      }
+
+      setSistemaConducao(plotToEdit.sistemaConducao || 'Espaldeira');
+      setPortaEnxerto(plotToEdit.portaEnxerto || 'Paulsen 1103');
+      setAltitudeM(plotToEdit.altitudeM || 1050);
+      setExposicaoSolar(plotToEdit.exposicaoSolar || 'Face Norte (Mais Sol)');
+      setEspacamentoRuaM(plotToEdit.espacamentoRuaM || 3.5);
+      setEspacamentoPlantaM(plotToEdit.espacamentoPlantaM || 0.7);
+      setAnoPlantio(plotToEdit.anoPlantio || 2021);
+      setCoberturaSolo(plotToEdit.coberturaSolo || 'Braquiária nas entrelinhas');
+      setObservacoesTerroir(plotToEdit.observacoesTerroir || '');
+      setIrrigado(plotToEdit.irrigado ?? true);
+    } else {
+      setCultura('Café');
+      setNome('');
+      setAreaHa(3.5);
+      setVariedadeCafe('Arara');
+      setVariedadeUva('Syrah (Shiraz)');
+      setCustomVariedade('');
+      setIsCustomVariedade(false);
+      setSistemaConducao('Espaldeira');
+      setPortaEnxerto('Paulsen 1103');
+      setAltitudeM(1050);
+      setExposicaoSolar('Face Norte (Mais Sol)');
+      setEspacamentoRuaM(3.5);
+      setEspacamentoPlantaM(0.7);
+      setAnoPlantio(2021);
+      setCoberturaSolo('Braquiária nas entrelinhas');
+      setObservacoesTerroir('');
+      setIrrigado(true);
+    }
+  }, [plotToEdit, isOpen]);
+
   if (!isOpen) return null;
 
   const handleCulturaChange = (novaCultura: CulturaTalhao) => {
     setCultura(novaCultura);
     setIsCustomVariedade(false);
-    if (novaCultura === 'Uva') {
-      setEspacamentoRuaM(2.8);
-      setEspacamentoPlantaM(1.2);
-    } else {
-      setEspacamentoRuaM(3.5);
-      setEspacamentoPlantaM(0.7);
+    if (!plotToEdit) {
+      if (novaCultura === 'Uva') {
+        setEspacamentoRuaM(2.8);
+        setEspacamentoPlantaM(1.2);
+      } else {
+        setEspacamentoRuaM(3.5);
+        setEspacamentoPlantaM(0.7);
+      }
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nome.trim()) return;
+    if (!nome.trim()) {
+      alert('Informe o nome ou identificação do talhão.');
+      return;
+    }
 
     let variedadeFinal = cultura === 'Uva' ? variedadeUva : variedadeCafe;
     if (isCustomVariedade && customVariedade.trim()) {
       variedadeFinal = customVariedade.trim() as any;
     }
 
-    const newPlot: Plot = {
-      id: `plot-${Date.now()}`,
+    const finalPlot: Plot = {
+      id: plotToEdit ? plotToEdit.id : `plot-${Date.now()}`,
       nome: nome.trim(),
       cultura,
       areaHa,
@@ -111,7 +177,7 @@ export const ModalNovoTalhao: React.FC<ModalNovoTalhaoProps> = ({ isOpen, onClos
       irrigado,
     };
 
-    onSave(newPlot);
+    onSave(finalPlot);
     onClose();
   };
 
@@ -130,7 +196,11 @@ export const ModalNovoTalhao: React.FC<ModalNovoTalhaoProps> = ({ isOpen, onClos
             </div>
             <div>
               <h3 className="font-extrabold text-base sm:text-lg text-stone-900 font-playfair">
-                {cultura === 'Uva' ? 'Novo Talhão de Uva / Vinhedo' : 'Novo Talhão de Café Especial'}
+                {plotToEdit
+                  ? `Editar Talhão: ${plotToEdit.nome}`
+                  : cultura === 'Uva'
+                  ? 'Novo Talhão de Uva / Vinhedo'
+                  : 'Novo Talhão de Café Especial'}
               </h3>
               <p className="text-[11px] text-stone-500">Chapada Diamantina • Gestão Agronômica Individual</p>
             </div>
@@ -406,7 +476,7 @@ export const ModalNovoTalhao: React.FC<ModalNovoTalhaoProps> = ({ isOpen, onClos
               style={{ backgroundColor: cultura === 'Uva' ? '#581c87' : '#964f0b', color: '#ffffff' }}
               className="px-5 py-2.5 rounded-xl text-white font-bold transition-all shadow-md min-h-[44px] active:scale-95"
             >
-              Salvar Talhão de {cultura}
+              {plotToEdit ? 'Salvar Alterações do Talhão' : `Salvar Talhão de ${cultura}`}
             </button>
           </div>
         </form>

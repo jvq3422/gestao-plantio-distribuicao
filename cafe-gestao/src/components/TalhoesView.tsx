@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plot } from '../types';
-import { Plus, Mountain, Sun, Compass, Ruler, ShieldCheck, ArrowRight, Award, Trash2, Sprout } from 'lucide-react';
+import { Plus, Mountain, Sun, Compass, Ruler, ShieldCheck, ArrowRight, Award, Trash2, Sprout, Edit3 } from 'lucide-react';
 
 interface TalhoesViewProps {
   plots: Plot[];
@@ -8,6 +8,7 @@ interface TalhoesViewProps {
   onOpenNewPlotModal: () => void;
   onDeletePlot?: (plotId: string, plotNome: string) => void;
   onOpenManejo?: (plotId: string) => void;
+  onEditPlot?: (plot: Plot) => void;
 }
 
 export const TalhoesView: React.FC<TalhoesViewProps> = ({
@@ -16,6 +17,7 @@ export const TalhoesView: React.FC<TalhoesViewProps> = ({
   onOpenNewPlotModal,
   onDeletePlot,
   onOpenManejo,
+  onEditPlot,
 }) => {
   return (
     <div className="space-y-6">
@@ -111,10 +113,22 @@ export const TalhoesView: React.FC<TalhoesViewProps> = ({
                         {plot.nome}
                       </h3>
                     </div>
-                    <div className="flex items-center space-x-1.5">
+                    <div className="flex items-center space-x-1">
                       <span className="text-xs font-black text-recreio-espresso-950 bg-[#faf6ef] px-2.5 py-1 rounded-lg border border-recreio-gold-200">
                         {plot.areaHa.toFixed(1)} ha
                       </span>
+                      {onEditPlot && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditPlot(plot);
+                          }}
+                          title={`Editar talhão ${plot.nome}`}
+                          className="p-1.5 text-stone-400 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-colors border border-transparent hover:border-stone-300"
+                        >
+                          <Edit3 className="w-4 h-4 text-stone-600" />
+                        </button>
+                      )}
                       {onDeletePlot && (
                         <button
                           onClick={(e) => {

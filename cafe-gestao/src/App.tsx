@@ -50,6 +50,7 @@ export function App() {
 
   // Modais Agronômicos & Nuvem
   const [isPlotModalOpen, setIsPlotModalOpen] = useState(false);
+  const [plotToEdit, setPlotToEdit] = useState<Plot | null>(null);
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
   const [isHarvestModalOpen, setIsHarvestModalOpen] = useState(false);
   const [isFertilizerModalOpen, setIsFertilizerModalOpen] = useState(false);
@@ -154,11 +155,29 @@ export function App() {
     setActiveTab('manejo');
   };
 
-  const handleSavePlot = (newPlot: Plot) => {
-    const updated = [...plots, newPlot];
+  const handleOpenNewPlot = () => {
+    setPlotToEdit(null);
+    setIsPlotModalOpen(true);
+  };
+
+  const handleOpenEditPlot = (plot: Plot) => {
+    setPlotToEdit(plot);
+    setIsPlotModalOpen(true);
+  };
+
+  const handleSavePlot = (plotData: Plot) => {
+    const existingIndex = plots.findIndex((p) => p.id === plotData.id);
+    let updated: Plot[];
+    if (existingIndex >= 0) {
+      updated = [...plots];
+      updated[existingIndex] = plotData;
+    } else {
+      updated = [...plots, plotData];
+    }
     setPlots(updated);
     StorageService.savePlots(updated);
-    setCalcPlotId(newPlot.id);
+    setCalcPlotId(plotData.id);
+    setPlotToEdit(null);
   };
 
   const handleDeletePlot = (plotId: string, plotNome: string) => {
@@ -254,7 +273,8 @@ export function App() {
               <TalhoesView
                 plots={plots}
                 onSelectPlotForCalc={handleSelectPlotForCalc}
-                onOpenNewPlotModal={() => setIsPlotModalOpen(true)}
+                onOpenNewPlotModal={handleOpenNewPlot}
+                onEditPlot={handleOpenEditPlot}
                 onDeletePlot={handleDeletePlot}
                 onOpenManejo={handleOpenManejo}
               />
@@ -351,7 +371,11 @@ export function App() {
       {/* Modais Agronômicos */}
       <ModalNovoTalhao
         isOpen={isPlotModalOpen}
-        onClose={() => setIsPlotModalOpen(false)}
+        plotToEdit={plotToEdit}
+        onClose={() => {
+          setIsPlotModalOpen(false);
+          setPlotToEdit(null);
+        }}
         onSave={handleSavePlot}
       />
 
