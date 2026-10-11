@@ -71,7 +71,21 @@ export const ModalNovoTalhao: React.FC<ModalNovoTalhaoProps> = ({ isOpen, plotTo
   const [observacoesTerroir, setObservacoesTerroir] = useState('');
   const [irrigado, setIrrigado] = useState(true);
 
+  const lastInitializedKeyRef = React.useRef<string | null>(null);
+
   useEffect(() => {
+    if (!isOpen) {
+      lastInitializedKeyRef.current = null;
+      return;
+    }
+
+    const currentKey = plotToEdit ? `edit-${plotToEdit.id}` : 'new-plot';
+    if (lastInitializedKeyRef.current === currentKey) {
+      // Já inicializado para esta sessão/talhão, não sobrescrever enquanto o usuário edita
+      return;
+    }
+    lastInitializedKeyRef.current = currentKey;
+
     if (plotToEdit) {
       const c = plotToEdit.cultura || 'Café';
       setCultura(c);
@@ -129,7 +143,7 @@ export const ModalNovoTalhao: React.FC<ModalNovoTalhaoProps> = ({ isOpen, plotTo
       setObservacoesTerroir('');
       setIrrigado(true);
     }
-  }, [plotToEdit, isOpen]);
+  }, [plotToEdit?.id, isOpen]);
 
   if (!isOpen) return null;
 

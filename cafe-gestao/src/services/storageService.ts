@@ -161,7 +161,8 @@ export class StorageService {
   static saveFertilizante(fert: CommercialFertilizer): void {
     const ferts = this.getFertilizantes().filter((f) => f.id !== fert.id);
     ferts.unshift(fert);
-    this.saveFertilizantes(ferts);
+    this.saveFertilizantes(ferts, true);
+    this.syncHook?.('recreio_fertilizantes', fert);
   }
 
   // --- REGISTROS DE MANEJO: ADUBAÇÕES E PROFILAXIAS ---
@@ -187,7 +188,8 @@ export class StorageService {
   static addAdubacao(reg: RegistroAdubacao): void {
     const adubacoes = this.getAdubacoes().filter((a) => a.id !== reg.id);
     adubacoes.unshift(reg);
-    this.saveAdubacoes(adubacoes);
+    this.saveAdubacoes(adubacoes, true);
+    this.syncHook?.('recreio_adubacoes', reg);
   }
 
   static getProfilaxias(): RegistroProfilaxia[] {
@@ -212,14 +214,15 @@ export class StorageService {
   static addProfilaxia(reg: RegistroProfilaxia): void {
     const profilaxias = this.getProfilaxias().filter((p) => p.id !== reg.id);
     profilaxias.unshift(reg);
-    this.saveProfilaxias(profilaxias);
+    this.saveProfilaxias(profilaxias, true);
+    this.syncHook?.('recreio_profilaxias', reg);
   }
 
   // --- TALHÕES ---
   static getPlots(): Plot[] {
     const raw = localStorage.getItem(this.KEY_PLOTS);
     if (!raw) {
-      this.savePlots(INITIAL_PLOTS);
+      this.savePlots(INITIAL_PLOTS, true);
       return INITIAL_PLOTS;
     }
     try {
@@ -234,6 +237,20 @@ export class StorageService {
     if (!skipSync) {
       plots.forEach((p) => this.syncHook?.('recreio_plots', p));
     }
+  }
+
+  static savePlot(plot: Plot): void {
+    const plots = this.getPlots();
+    const idx = plots.findIndex((p) => p.id === plot.id);
+    let updated: Plot[];
+    if (idx >= 0) {
+      updated = [...plots];
+      updated[idx] = plot;
+    } else {
+      updated = [plot, ...plots];
+    }
+    this.savePlots(updated, true);
+    this.syncHook?.('recreio_plots', plot);
   }
 
   // --- LAUDOS DE SOLO ---
@@ -257,6 +274,20 @@ export class StorageService {
     }
   }
 
+  static saveAnalysis(analysis: SoilAnalysis): void {
+    const analyses = this.getAnalyses();
+    const idx = analyses.findIndex((a) => a.id === analysis.id);
+    let updated: SoilAnalysis[];
+    if (idx >= 0) {
+      updated = [...analyses];
+      updated[idx] = analysis;
+    } else {
+      updated = [analysis, ...analyses];
+    }
+    this.saveAnalyses(updated, true);
+    this.syncHook?.('recreio_analyses', analysis);
+  }
+
   // --- COLHEITAS ---
   static getHarvests(): HarvestRecord[] {
     const raw = localStorage.getItem(this.KEY_HARVESTS);
@@ -276,6 +307,20 @@ export class StorageService {
     if (!skipSync) {
       harvests.forEach((h) => this.syncHook?.('recreio_harvests', h));
     }
+  }
+
+  static saveHarvest(harvest: HarvestRecord): void {
+    const harvests = this.getHarvests();
+    const idx = harvests.findIndex((h) => h.id === harvest.id);
+    let updated: HarvestRecord[];
+    if (idx >= 0) {
+      updated = [...harvests];
+      updated[idx] = harvest;
+    } else {
+      updated = [harvest, ...harvests];
+    }
+    this.saveHarvests(updated, true);
+    this.syncHook?.('recreio_harvests', harvest);
   }
 
   static getPlans(): RecommendationPlan[] {
@@ -315,6 +360,20 @@ export class StorageService {
     }
   }
 
+  static saveProduto(prod: Produto): void {
+    const produtos = this.getProdutos();
+    const idx = produtos.findIndex((p) => p.id === prod.id);
+    let updated: Produto[];
+    if (idx >= 0) {
+      updated = [...produtos];
+      updated[idx] = prod;
+    } else {
+      updated = [prod, ...produtos];
+    }
+    this.saveProdutos(updated, true);
+    this.syncHook?.('recreio_produtos', prod);
+  }
+
   static getPontosVenda(): PontoVenda[] {
     const raw = localStorage.getItem(this.KEY_PDVS);
     if (!raw) {
@@ -333,6 +392,20 @@ export class StorageService {
     if (!skipSync) {
       pdvs.forEach((p) => this.syncHook?.('recreio_pdvs', p));
     }
+  }
+
+  static savePontoVenda(pdv: PontoVenda): void {
+    const pdvs = this.getPontosVenda();
+    const idx = pdvs.findIndex((p) => p.id === pdv.id);
+    let updated: PontoVenda[];
+    if (idx >= 0) {
+      updated = [...pdvs];
+      updated[idx] = pdv;
+    } else {
+      updated = [pdv, ...pdvs];
+    }
+    this.savePontosVenda(updated, true);
+    this.syncHook?.('recreio_pdvs', pdv);
   }
 
   static getPrecosNegociados(): PrecoNegociado[] {
@@ -361,8 +434,10 @@ export class StorageService {
     const precos = this.getPrecosNegociados().filter(
       (p) => !(p.pontoVendaId === pontoVendaId && p.produtoId === produtoId)
     );
-    precos.push({ pontoVendaId, produtoId, preco });
-    this.savePrecosNegociados(precos);
+    const item = { pontoVendaId, produtoId, preco };
+    precos.push(item);
+    this.savePrecosNegociados(precos, true);
+    this.syncHook?.('recreio_precos', { ...item, id: `${pontoVendaId}_${produtoId}` });
   }
 
   static getPrecoParaPdv(pontoVendaId: string, produtoId: string): number {
@@ -398,7 +473,8 @@ export class StorageService {
   static addSaida(saida: SaidaVenda): void {
     const saidas = this.getSaidas();
     saidas.unshift(saida);
-    this.saveSaidas(saidas);
+    this.saveSaidas(saidas, true);
+    this.syncHook?.('recreio_saidas', saida);
 
     // Baixa automática de estoque
     const produtos = this.getProdutos();
@@ -411,7 +487,13 @@ export class StorageService {
       }
     });
     if (teveBaixa) {
-      this.saveProdutos(produtos);
+      this.saveProdutos(produtos, true);
+      saida.itens.forEach((item) => {
+        const prod = produtos.find((p) => p.id === item.produtoId);
+        if (prod) {
+          this.syncHook?.('recreio_produtos', prod);
+        }
+      });
     }
   }
 

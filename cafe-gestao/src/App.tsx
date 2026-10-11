@@ -166,16 +166,8 @@ export function App() {
   };
 
   const handleSavePlot = (plotData: Plot) => {
-    const existingIndex = plots.findIndex((p) => p.id === plotData.id);
-    let updated: Plot[];
-    if (existingIndex >= 0) {
-      updated = [...plots];
-      updated[existingIndex] = plotData;
-    } else {
-      updated = [...plots, plotData];
-    }
-    setPlots(updated);
-    StorageService.savePlots(updated);
+    StorageService.savePlot(plotData);
+    loadAllData();
     setCalcPlotId(plotData.id);
     setPlotToEdit(null);
   };
@@ -184,15 +176,14 @@ export function App() {
     StorageService.deletePlot(plotId);
     loadAllData();
     if (calcPlotId === plotId) {
-      const remaining = plots.filter((p) => p.id !== plotId);
+      const remaining = StorageService.getPlots().filter((p) => p.id !== plotId);
       setCalcPlotId(remaining[0]?.id || '');
     }
   };
 
   const handleSaveAnalysis = (newAnalysis: SoilAnalysis) => {
-    const updated = [newAnalysis, ...analyses];
-    setAnalyses(updated);
-    StorageService.saveAnalyses(updated);
+    StorageService.saveAnalysis(newAnalysis);
+    loadAllData();
   };
 
   const handleDeleteAnalysis = (analysisId: string) => {
@@ -201,9 +192,8 @@ export function App() {
   };
 
   const handleSaveHarvest = (newHarvest: HarvestRecord) => {
-    const updated = [newHarvest, ...harvests];
-    setHarvests(updated);
-    StorageService.saveHarvests(updated);
+    StorageService.saveHarvest(newHarvest);
+    loadAllData();
   };
 
   const handleDeleteHarvest = (harvestId: string) => {

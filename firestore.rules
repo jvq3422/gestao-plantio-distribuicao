@@ -5,13 +5,10 @@ service cloud.firestore {
     function isValidClientWrite() {
       let syncControl = /databases/$(database)/documents/recreio_meta/sync_control;
       let lastReset = exists(syncControl) ? get(syncControl).data.lastResetAt : 0;
-      let now = request.time.toMillis();
       let ct = request.resource.data.clientTimestamp;
       return request.resource.data.syncVersion == 5
         && ct is int
-        && ct > lastReset
-        && ct <= now + 60000
-        && (now - ct) < 60000;
+        && ct > lastReset;
     }
 
     match /recreio_plots/{id} {

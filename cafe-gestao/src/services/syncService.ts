@@ -376,7 +376,8 @@ export class SyncService {
 
     try {
       const docRef = doc(db, collectionName, entity.id);
-      const clientTimestamp = Date.now();
+      const lastResetSeen = Number(localStorage.getItem('recreio_last_reset_seen') || 0);
+      const clientTimestamp = Math.max(Date.now(), lastResetSeen + 1000);
       await setDoc(docRef, {
         ...entity,
         syncVersion: SYNC_PROTOCOL_VERSION,
@@ -415,7 +416,8 @@ export class SyncService {
       this.notifyStatus('syncing');
       ensureAuthenticated().catch(() => {});
       const batch = writeBatch(db);
-      const clientTimestamp = Date.now();
+      const lastResetSeen = Number(localStorage.getItem('recreio_last_reset_seen') || 0);
+      const clientTimestamp = Math.max(Date.now(), lastResetSeen + 1000);
 
       // Plots
       const plots = StorageService.getPlots();
