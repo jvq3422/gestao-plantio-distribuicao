@@ -669,7 +669,7 @@ export const CalculadoraNutricaoView: React.FC<CalculadoraNutricaoViewProps> = (
               </div>
 
               {/* Visualização Desktop: Tabela Completa de Insumos */}
-              <div className="hidden md:block overflow-x-auto touch-scroll">
+              <div className="hidden md:block overflow-x-auto desktop-scrollbar touch-scroll">
                 <table className="w-full text-xs text-left">
                   <thead className="bg-stone-50 text-stone-500 uppercase text-[10px] font-bold border-y border-stone-200">
                     <tr>

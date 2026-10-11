@@ -183,7 +183,14 @@ export const NuvemSyncModal: React.FC<NuvemSyncModalProps> = ({
         </div>
 
         {/* Sub-tabs */}
-        <div className="flex border-b border-stone-200 bg-stone-50/80 px-4 pt-2 gap-1 overflow-x-auto no-scrollbar text-xs font-bold">
+        <div
+          onWheel={(e) => {
+            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+              e.currentTarget.scrollLeft += e.deltaY;
+            }
+          }}
+          className="flex border-b border-stone-200 bg-stone-50/80 px-4 pt-2 gap-1 overflow-x-auto desktop-scrollbar text-xs font-bold touch-scroll"
+        >
           <button
             onClick={() => setActiveTab('pwa')}
             className={`px-3 py-2 rounded-t-xl transition-all flex items-center space-x-1.5 whitespace-nowrap ${

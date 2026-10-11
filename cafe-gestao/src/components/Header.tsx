@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   Beaker,
   Calculator,
@@ -12,6 +12,8 @@ import {
   WifiOff,
   ClipboardList,
   FlaskConical,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { SyncStatus } from '../services/syncService';
 
@@ -36,6 +38,41 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenNuvemModal,
   syncStatus = 'not_configured',
 }) => {
+  const navRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    if (navRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = navRef.current;
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    const handleResize = () => checkScroll();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [checkScroll, ambiente]);
+
+  const scrollNav = (direction: 'left' | 'right') => {
+    if (navRef.current) {
+      const amount = direction === 'left' ? -260 : 260;
+      navRef.current.scrollBy({ left: amount, behavior: 'smooth' });
+      setTimeout(checkScroll, 350);
+    }
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (navRef.current && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.preventDefault();
+      navRef.current.scrollLeft += e.deltaY;
+      checkScroll();
+    }
+  };
+
   const tabsAdubacao = [
     { id: 'calculadora', label: 'Cálculo de Adubação & Fórmulas', icon: Calculator },
     { id: 'talhoes', label: 'Talhões & Vinhedos', icon: Sprout },
@@ -187,27 +224,56 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Sub-navigation Tabs (Somente para o Módulo de Adubação) */}
         {ambiente === 'adubacao' && (
-          <nav className="flex space-x-1.5 sm:space-x-2 overflow-x-auto py-2 scrollbar-none no-scrollbar touch-scroll border-t border-stone-200 -mx-3 px-3 sm:mx-0 sm:px-0">
-            {tabsAdubacao.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  style={isActive ? { backgroundColor: '#faeed9', color: '#643410', borderColor: '#ecc47b' } : {}}
-                  className={`flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all whitespace-nowrap min-h-[38px] shrink-0 border ${
-                    isActive
-                      ? 'bg-recreio-gold-100 text-recreio-gold-900 border-recreio-gold-300 shadow-xs'
-                      : 'bg-white text-stone-600 hover:bg-stone-100 hover:text-stone-900 border-transparent'
-                  }`}
-                >
-                  <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isActive ? 'text-recreio-gold-700' : 'text-stone-400'}`} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </nav>
+          <div className="relative border-t border-stone-200 py-1.5 -mx-3 px-3 sm:mx-0 sm:px-0 flex items-center group">
+            {canScrollLeft && (
+              <button
+                type="button"
+                onClick={() => scrollNav('left')}
+                className="hidden md:flex absolute left-0 z-20 items-center justify-center w-8 h-8 rounded-full bg-white shadow-md border border-stone-300 text-stone-700 hover:text-stone-950 hover:bg-stone-50 transition-all -ml-2 cursor-pointer"
+                title="Rolar abas para a esquerda"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            )}
+
+            <nav
+              ref={navRef}
+              onScroll={checkScroll}
+              onWheel={handleWheel}
+              className="flex-1 flex space-x-1.5 sm:space-x-2 overflow-x-auto py-1 desktop-scrollbar touch-scroll"
+            >
+              {tabsAdubacao.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    style={isActive ? { backgroundColor: '#faeed9', color: '#643410', borderColor: '#ecc47b' } : {}}
+                    className={`flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all whitespace-nowrap min-h-[38px] shrink-0 border ${
+                      isActive
+                        ? 'bg-recreio-gold-100 text-recreio-gold-900 border-recreio-gold-300 shadow-xs'
+                        : 'bg-white text-stone-600 hover:bg-stone-100 hover:text-stone-900 border-transparent'
+                    }`}
+                  >
+                    <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isActive ? 'text-recreio-gold-700' : 'text-stone-400'}`} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            {canScrollRight && (
+              <button
+                type="button"
+                onClick={() => scrollNav('right')}
+                className="hidden md:flex absolute right-0 z-20 items-center justify-center w-8 h-8 rounded-full bg-white shadow-md border border-stone-300 text-stone-700 hover:text-stone-950 hover:bg-stone-50 transition-all -mr-2 cursor-pointer"
+                title="Rolar abas para a direita"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         )}
       </div>
     </header>

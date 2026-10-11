@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Produto, PontoVenda, PrecoNegociado, SaidaVenda, Plot } from '../../types';
 import { StorageService } from '../../services/storageService';
 import { LancamentoSaidasTab } from './LancamentoSaidasTab';
@@ -9,7 +9,7 @@ import { ModalNovaSaida } from './ModalNovaSaida';
 import { ModalNovoPontoVenda } from './ModalNovoPontoVenda';
 import { ModalNovoProduto } from './ModalNovoProduto';
 import { RelatorioVendasModal } from './RelatorioVendasModal';
-import { ShoppingCart, Tag, Package, DollarSign } from 'lucide-react';
+import { ShoppingCart, Tag, Package, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ModuloDistribuicaoViewProps {
   produtos: Produto[];
@@ -29,6 +29,40 @@ export const ModuloDistribuicaoView: React.FC<ModuloDistribuicaoViewProps> = ({
   onRefreshData,
 }) => {
   const [subTab, setSubTab] = useState<'saidas' | 'precos' | 'produtos' | 'receitas'>('saidas');
+  const navRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    if (navRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = navRef.current;
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    const handleResize = () => checkScroll();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [checkScroll]);
+
+  const scrollNav = (direction: 'left' | 'right') => {
+    if (navRef.current) {
+      const amount = direction === 'left' ? -220 : 220;
+      navRef.current.scrollBy({ left: amount, behavior: 'smooth' });
+      setTimeout(checkScroll, 350);
+    }
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (navRef.current && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.preventDefault();
+      navRef.current.scrollLeft += e.deltaY;
+      checkScroll();
+    }
+  };
 
   // Modals
   const [isNovaSaidaOpen, setIsNovaSaidaOpen] = useState(false);
@@ -65,27 +99,56 @@ export const ModuloDistribuicaoView: React.FC<ModuloDistribuicaoViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Sub-navigation Menu */}
-      <div className="flex space-x-2 overflow-x-auto pb-2 border-b border-stone-200 no-scrollbar touch-scroll -mx-3 px-3 sm:mx-0 sm:px-0 scroll-smooth">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = subTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setSubTab(tab.id as any)}
-              style={isActive ? { backgroundColor: '#231914', color: '#ffffff', borderColor: '#3c3029' } : { backgroundColor: '#ffffff', color: '#44403c' }}
-              className={`flex items-center space-x-1.5 sm:space-x-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap min-h-[40px] shrink-0 border shadow-xs ${
-                isActive
-                  ? 'bg-recreio-espresso-950 text-white shadow-md border-recreio-espresso-900'
-                  : 'bg-white text-stone-700 hover:bg-stone-100 hover:text-stone-900 border-stone-200/80'
-              }`}
-            >
-              <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isActive ? 'text-[#e0a442]' : 'text-stone-400'}`} />
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.shortLabel}</span>
-            </button>
-          );
-        })}
+      <div className="relative flex items-center border-b border-stone-200 pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 group">
+        {canScrollLeft && (
+          <button
+            type="button"
+            onClick={() => scrollNav('left')}
+            className="hidden md:flex absolute left-0 z-20 items-center justify-center w-8 h-8 rounded-full bg-white shadow-md border border-stone-300 text-stone-700 hover:text-stone-950 hover:bg-stone-50 transition-all -ml-2 cursor-pointer"
+            title="Rolar abas para a esquerda"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        )}
+
+        <div
+          ref={navRef}
+          onScroll={checkScroll}
+          onWheel={handleWheel}
+          className="flex-1 flex space-x-2 overflow-x-auto desktop-scrollbar touch-scroll py-1"
+        >
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = subTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setSubTab(tab.id as any)}
+                style={isActive ? { backgroundColor: '#231914', color: '#ffffff', borderColor: '#3c3029' } : { backgroundColor: '#ffffff', color: '#44403c' }}
+                className={`flex items-center space-x-1.5 sm:space-x-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap min-h-[40px] shrink-0 border shadow-xs ${
+                  isActive
+                    ? 'bg-recreio-espresso-950 text-white shadow-md border-recreio-espresso-900'
+                    : 'bg-white text-stone-700 hover:bg-stone-100 hover:text-stone-900 border-stone-200/80'
+                }`}
+              >
+                <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isActive ? 'text-[#e0a442]' : 'text-stone-400'}`} />
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.shortLabel}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {canScrollRight && (
+          <button
+            type="button"
+            onClick={() => scrollNav('right')}
+            className="hidden md:flex absolute right-0 z-20 items-center justify-center w-8 h-8 rounded-full bg-white shadow-md border border-stone-300 text-stone-700 hover:text-stone-950 hover:bg-stone-50 transition-all -mr-2 cursor-pointer"
+            title="Rolar abas para a direita"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Sub-view Content */}

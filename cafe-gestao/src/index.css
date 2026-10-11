@@ -121,12 +121,20 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-y: scroll;
+  scrollbar-color: #8c725e #f5efe6;
+  scrollbar-width: auto;
+}
+
 body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: #faf8f4;
   color: #1c120c;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scrollbar-color: #8c725e #f5efe6;
+  scrollbar-width: auto;
 }
 
 .font-playfair,
@@ -252,15 +260,12 @@ body {
   }
 }
 
-/* Smooth Touch Scrolling on Mobile */
-.touch-scroll,
-.overflow-x-auto,
-.overflow-y-auto {
+/* Smooth Touch Scrolling on Mobile (Sem interferir no arrasto do mouse no desktop) */
+.touch-scroll {
   -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
 }
 
-/* Hide scrollbar for clean horizontal tab swipe on mobile */
+/* Hide scrollbar for mobile clean swipe */
 .no-scrollbar::-webkit-scrollbar,
 .scrollbar-none::-webkit-scrollbar {
   display: none !important;
@@ -273,23 +278,57 @@ body {
   scrollbar-width: none !important;
 }
 
-/* Custom scrollbars for desktop */
+/* ==========================================================================
+   ROBUST DESKTOP SCROLLBARS (WCAG High Contrast, 12px Target, Full Cross-Browser)
+   ========================================================================== */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #f5efe6;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: #8c725e;
+  border-radius: 6px;
+  border: 2px solid #f5efe6;
+  min-height: 40px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #5a473b;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #391a05;
+}
+
+::-webkit-scrollbar-corner {
+  background: #f5efe6;
+}
+
+/* Scrollbar estilizada para containers desktop, tabelas e abas */
+.desktop-scrollbar {
+  scrollbar-color: #a58d79 #f5efe6;
+  scrollbar-width: thin;
+}
+.desktop-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.desktop-scrollbar::-webkit-scrollbar-track {
+  background: #f5efe6;
+  border-radius: 4px;
+}
+.desktop-scrollbar::-webkit-scrollbar-thumb {
+  background: #a58d79;
+  border-radius: 4px;
+  border: 1px solid #f5efe6;
+}
+.desktop-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #715a4b;
 }
 
 @media print {
