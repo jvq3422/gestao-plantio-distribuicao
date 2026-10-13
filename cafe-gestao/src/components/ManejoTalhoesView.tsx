@@ -15,9 +15,11 @@ import {
   Clock,
   DollarSign,
   Filter,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { ModalNovaAdubacao } from './ModalNovaAdubacao';
 import { ModalNovaProfilaxia } from './ModalNovaProfilaxia';
+import { RelatorioAdubacaoModal } from './RelatorioAdubacaoModal';
 
 interface ManejoTalhoesViewProps {
   plots: Plot[];
@@ -44,6 +46,7 @@ export const ManejoTalhoesView: React.FC<ManejoTalhoesViewProps> = ({
   const [selectedPlotId, setSelectedPlotId] = useState<string>('todos');
   const [isModalAdubacaoOpen, setIsModalAdubacaoOpen] = useState(false);
   const [isModalProfilaxiaOpen, setIsModalProfilaxiaOpen] = useState(false);
+  const [isRelatorioOpen, setIsRelatorioOpen] = useState(false);
 
   // Filter lists
   const filteredAdubacoes = adubacoes.filter((a) => {
@@ -133,6 +136,16 @@ export const ManejoTalhoesView: React.FC<ManejoTalhoesViewProps> = ({
               ))}
             </select>
           </div>
+
+          {/* Botão Relatório Consolidado */}
+          <button
+            onClick={() => setIsRelatorioOpen(true)}
+            style={{ backgroundColor: '#231914', color: '#ffffff' }}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-stone-900 hover:bg-black text-white font-bold rounded-xl shadow-md transition-all text-xs active:scale-95"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-[#e0a442]" />
+            <span>Relatório (PDF / Excel)</span>
+          </button>
 
           {activeSubTab === 'adubacoes' ? (
             <button
@@ -510,6 +523,13 @@ export const ManejoTalhoesView: React.FC<ManejoTalhoesViewProps> = ({
         preselectedPlotId={selectedPlotId !== 'todos' ? selectedPlotId : undefined}
         onClose={() => setIsModalProfilaxiaOpen(false)}
         onSave={onAddProfilaxia}
+      />
+
+      <RelatorioAdubacaoModal
+        isOpen={isRelatorioOpen}
+        onClose={() => setIsRelatorioOpen(false)}
+        adubacoes={adubacoes}
+        plots={plots}
       />
     </div>
   );

@@ -1,4 +1,5 @@
-import { RecommendationPlan, Plot, SaidaVenda, PontoVenda, Produto } from '../types';
+import { RecommendationPlan, Plot, SaidaVenda, PontoVenda, Produto, RegistroAdubacao, HarvestRecord } from '../types';
+import { calcularExportacaoColheita } from './historyFeedbackEngine';
 
 /**
  * Utilitário para acionar download de arquivo no navegador
@@ -360,3 +361,211 @@ export function generateVendasTxt(saidas: SaidaVenda[], pdvs: PontoVenda[], prod
 
   return text;
 }
+
+// ============================================================================
+// 3. EXPORTAÇÃO DE ADUBAÇÕES / MANEJOS (EXCEL & TXT)
+// ============================================================================
+
+/**
+ * Gera e baixa planilha formatada compatível com Microsoft Excel contendo todos os manejos de adubação
+ */
+export function exportAdubacoesExcel(adubacoes: RegistroAdubacao[], plots: Plot[]): void {
+  const BOM = '\uFEFF';
+  const rows: string[] = [];
+
+  const totalKg = adubacoes.reduce((acc, a) => acc + (a.quantidadeKg || 0), 0);
+  const totalCusto = adubacoes.reduce((acc, a) => acc + (a.custoTotal || 0), 0);
+  const safeDate = new Date().toLocaleDateString('pt-BR');
+
+  // Cabeçalho da Fazenda
+  rows.push('FAZENDA RECREIO DO MORRO - CHAPADA DIAMANTINA • BAHIA');
+  rows.push('RELATÓRIO DE MANEJOS NUTRICIONAIS & CADERNO DE CAMPO (ADUBAÇÕES)');
+  rows.push(`Data de Emissão;${safeDate};Total de Aplicações;${adubacoes.length}`);
+  rows.push('');
+
+  // 1. Resumo Consolidado
+  rows.push('1. RESUMO GERAL DE INSUMOS APLICADOS');
+  rows.push('Indicador;Valor');
+  rows.push(`Total Geral de Adubo Aplicado (kg);${totalKg.toLocaleString('pt-BR')}`);
+  rows.push(`Total Geral em Sacos de 50kg;${(totalKg / 50).toFixed(1)}`);
+  rows.push(`Investimento Total em Adubação (R$);R$ ${totalCusto.toFixed(2)}`);
+  rows.push(`Quantidade de Talhões Contemplados;${new Set(adubacoes.map((a) => a.plotId)).size}`);
+  rows.push('');
+
+  // 2. Tabela Detalhada de Aplicações
+  rows.push('2. EXTRATO DETALHADO DE REGISTROS DE ADUBAÇÃO');
+  rows.push('Data do Manejo;Talhão;Cultura;Área (ha);Adubo / Fórmula;Marca Comercial;Qtd (kg);Dose (kg/ha);Dose (g/planta);Modo de Aplicação;Fase Fenológica;Responsável;Custo Total (R$);Observações');
+
+  adubacoes.forEach((a) => {
+    const plot = plots.find((p) => p.id === a.plotId);
+    const plotNome = plot ? plot.nome : 'Talhão não encontrado';
+    const cultura = plot?.cultura || 'Café';
+    const areaHa = plot?.areaHa ? plot.areaHa.toFixed(1) : '-';
+    const doseKg = a.doseKgHa !== undefined ? a.doseKgHa.toString().replace('.', ',') : '-';
+    const doseG = a.doseGPorPlanta !== undefined ? a.doseGPorPlanta.toString().replace('.', ',') : '-';
+    const custo = a.custoTotal ? `R$ ${a.custoTotal.toFixed(2)}` : 'R$ 0,00';
+    const obs = a.observacoes ? a.observacoes.replace(/;/g, ',').replace(/\r?\n/g, ' ') : '';
+    const marca = a.marca ? a.marca.replace(/;/g, ',') : '-';
+    const resp = a.responsavel ? a.responsavel.replace(/;/g, ',') : '-';
+    const fase = a.estagioFenologico ? a.estagioFenologico.replace(/;/g, ',') : '-';
+
+    rows.push(
+      `"${a.data}";"${plotNome}";"${cultura}";${areaHa};"${a.aduboNome}";"${marca}";${a.quantidadeKg};${doseKg};${doseG};"${a.modoAplicacao}";"${fase}";"${resp}";${custo};"${obs}"`
+    );
+  });
+
+  rows.push('');
+  // 3. Total por Talhão
+  rows.push('3. CONSOLIDAÇÃO POR TALHÃO');
+  rows.push('Talhão;Cultura;Área (ha);Qtd Total Adubo (kg);Custo Total (R$);Total de Manejos');
+  plots.forEach((p) => {
+    const adubsTalhao = adubacoes.filter((a) => a.plotId === p.id);
+    if (adubsTalhao.length > 0) {
+      const kgTalhao = adubsTalhao.reduce((acc, a) => acc + (a.quantidadeKg || 0), 0);
+      const custoTalhao = adubsTalhao.reduce((acc, a) => acc + (a.custoTotal || 0), 0);
+      rows.push(
+        `"${p.nome}";"${p.cultura || 'Café'}";${p.areaHa.toFixed(1)};${kgTalhao};R$ ${custoTalhao.toFixed(2)};${adubsTalhao.length}`
+      );
+    }
+  });
+
+  const csvContent = BOM + rows.join('\r\n');
+  const safeDateFile = new Date().toISOString().split('T')[0];
+  downloadFile(csvContent, `Relatorio_Adubacoes_Recreio_do_Morro_${safeDateFile}.csv`);
+}
+
+/**
+ * Gera texto formatado de adubações para compartilhamento via WhatsApp
+ */
+export function generateAdubacoesTxt(adubacoes: RegistroAdubacao[], plots: Plot[]): string {
+  const totalKg = adubacoes.reduce((acc, a) => acc + (a.quantidadeKg || 0), 0);
+  const totalCusto = adubacoes.reduce((acc, a) => acc + (a.custoTotal || 0), 0);
+
+  let text = `🌱 *RECREIO DO MORRO - RELATÓRIO DE MANEJOS & ADUBAÇÃO*\n`;
+  text += `📅 *Posição em:* ${new Date().toLocaleDateString('pt-BR')}\n`;
+  text += `─────────────────────────────────────────\n\n`;
+
+  text += `📊 *TOTAIS CONSOLIDADOS*\n`;
+  text += `• *Total Aplicado:* ${totalKg.toLocaleString('pt-BR')} kg (~${(totalKg / 50).toFixed(1)} sacos)\n`;
+  text += `• *Investimento Total:* R$ ${totalCusto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
+  text += `• *Total de Intervenções:* ${adubacoes.length} aplicações registradas\n\n`;
+
+  text += `📍 *APLICAÇÕES POR TALHÃO*\n`;
+  plots.forEach((p) => {
+    const adubs = adubacoes.filter((a) => a.plotId === p.id);
+    if (adubs.length > 0) {
+      const kg = adubs.reduce((acc, a) => acc + (a.quantidadeKg || 0), 0);
+      const custo = adubs.reduce((acc, a) => acc + (a.custoTotal || 0), 0);
+      text += `• *${p.nome}* (${p.cultura || 'Café'} - ${p.areaHa} ha):\n`;
+      text += `  └ Total: ${kg.toLocaleString('pt-BR')} kg | R$ ${custo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
+      adubs.forEach((a) => {
+        text += `    - ${a.data}: ${a.aduboNome}${a.marca ? ` (${a.marca})` : ''} - ${a.quantidadeKg}kg (${a.modoAplicacao})\n`;
+      });
+    }
+  });
+
+  text += `\n─────────────────────────────────────────\n`;
+  text += `Fazenda Recreio do Morro • Gestão Agronômica Integrada\n`;
+  return text;
+}
+
+// ============================================================================
+// 4. EXPORTAÇÃO DE HISTÓRICO DE SAFRAS & BALANÇO NUTRICIONAL (EXCEL & TXT)
+// ============================================================================
+
+/**
+ * Gera e baixa planilha formatada compatível com Microsoft Excel contendo histórico de colheitas e balanço nutricional
+ */
+export function exportHistoricosExcel(harvests: HarvestRecord[], plots: Plot[]): void {
+  const BOM = '\uFEFF';
+  const rows: string[] = [];
+
+  const totalSacas = harvests.reduce((acc, h) => acc + (h.sacasTotais || 0), 0);
+  const mediaProd =
+    harvests.length > 0
+      ? harvests.reduce((acc, h) => acc + (h.produtividadeSacasHa || 0), 0) / harvests.length
+      : 0;
+  const safeDate = new Date().toLocaleDateString('pt-BR');
+
+  // Cabeçalho da Fazenda
+  rows.push('FAZENDA RECREIO DO MORRO - CHAPADA DIAMANTINA • BAHIA');
+  rows.push('RELATÓRIO HISTÓRICO DE SAFRAS, PRODUTIVIDADE E BALANÇO DE EXTRAÇÃO');
+  rows.push(`Data de Emissão;${safeDate};Total de Safras Registradas;${harvests.length}`);
+  rows.push('');
+
+  // 1. Resumo Geral
+  rows.push('1. RESUMO HISTÓRICO CONSOLIDADO');
+  rows.push('Indicador;Valor');
+  rows.push(`Volume Total Produzido Acumulado;${totalSacas.toLocaleString('pt-BR')} sacas / unidades`);
+  rows.push(`Produtividade Média Global;${mediaProd.toFixed(1)} scs/ha`);
+  rows.push(`Total de Safras Registradas;${harvests.length}`);
+  rows.push('');
+
+  // 2. Tabela Detalhada com Balanço Químico Real vs Exportado
+  rows.push('2. HISTÓRICO DETALHADO DE SAFRAS & BALANÇO NUTRICIONAL');
+  rows.push(
+    'Safra;Talhão;Cultura;Área (ha);Produtividade (scs/ha ou t/ha);Produção Total;Pontos SCA / Brix;Perfil Sensorial;N Aplicado (kg/ha);P2O5 Aplicado (kg/ha);K2O Aplicado (kg/ha);N Exportado Fruto (kg/ha);P2O5 Exportado Fruto (kg/ha);K2O Exportado Fruto (kg/ha);Balanço Líquido N (kg/ha);Balanço Líquido P2O5 (kg/ha);Balanço Líquido K2O (kg/ha);Observações de Campo'
+  );
+
+  harvests.forEach((h) => {
+    const plot = plots.find((p) => p.id === h.plotId);
+    const plotNome = plot ? plot.nome : 'Talhão não cadastrado';
+    const cultura = plot?.cultura || 'Café';
+    const areaHa = plot?.areaHa ? plot.areaHa.toFixed(1) : '-';
+
+    const exportado = calcularExportacaoColheita(h.produtividadeSacasHa || 0);
+    const balancoN = Number(((h.adubacaoRealN || 0) - exportado.nExportado).toFixed(1));
+    const balancoP = Number(((h.adubacaoRealP2O5 || 0) - exportado.p2o5Exportado).toFixed(1));
+    const balancoK = Number(((h.adubacaoRealK2O || 0) - exportado.k2oExportado).toFixed(1));
+
+    const sca = h.pontosSCA ? h.pontosSCA.toString().replace('.', ',') : '-';
+    const sensorial = h.perfilSensorial ? h.perfilSensorial.replace(/;/g, ',') : '-';
+    const obs = h.observacoes ? h.observacoes.replace(/;/g, ',').replace(/\r?\n/g, ' ') : '';
+
+    rows.push(
+      `"${h.safra}";"${plotNome}";"${cultura}";${areaHa};${h.produtividadeSacasHa};${h.sacasTotais};${sca};"${sensorial}";${h.adubacaoRealN};${h.adubacaoRealP2O5};${h.adubacaoRealK2O};${exportado.nExportado};${exportado.p2o5Exportado};${exportado.k2oExportado};${balancoN};${balancoP};${balancoK};"${obs}"`
+    );
+  });
+
+  const csvContent = BOM + rows.join('\r\n');
+  const safeDateFile = new Date().toISOString().split('T')[0];
+  downloadFile(csvContent, `Relatorio_Historico_Safras_Recreio_do_Morro_${safeDateFile}.csv`);
+}
+
+/**
+ * Gera texto formatado de histórico de safras para WhatsApp
+ */
+export function generateHistoricosTxt(harvests: HarvestRecord[], plots: Plot[]): string {
+  const totalSacas = harvests.reduce((acc, h) => acc + (h.sacasTotais || 0), 0);
+  const mediaProd =
+    harvests.length > 0
+      ? harvests.reduce((acc, h) => acc + (h.produtividadeSacasHa || 0), 0) / harvests.length
+      : 0;
+
+  let text = `🏆 *RECREIO DO MORRO - HISTÓRICO DE SAFRAS & QUALIDADE*\n`;
+  text += `📅 *Posição em:* ${new Date().toLocaleDateString('pt-BR')}\n`;
+  text += `─────────────────────────────────────────\n\n`;
+
+  text += `📈 *RESUMO DE PRODUÇÃO*\n`;
+  text += `• *Volume Acumulado:* ${totalSacas.toLocaleString('pt-BR')} sacas / colheitas\n`;
+  text += `• *Produtividade Média:* ${mediaProd.toFixed(1)} scs/ha\n`;
+  text += `• *Safras Avaliadas:* ${harvests.length} safras registradas\n\n`;
+
+  text += `☕ *DETALHAMENTO POR TALHÃO & QUALIDADE*\n`;
+  harvests.forEach((h) => {
+    const plot = plots.find((p) => p.id === h.plotId);
+    text += `• *${h.safra} - ${plot?.nome || 'Talhão'}* (${plot?.cultura || 'Café'}):\n`;
+    text += `  └ Produção: ${h.produtividadeSacasHa} scs/ha (Total: ${h.sacasTotais} scs)\n`;
+    if (h.pontosSCA) {
+      text += `  └ Qualidade Bebida: *${h.pontosSCA} pts SCA* ${h.perfilSensorial ? `(${h.perfilSensorial})` : ''}\n`;
+    }
+    const exportado = calcularExportacaoColheita(h.produtividadeSacasHa);
+    const saldoK = ((h.adubacaoRealK2O || 0) - exportado.k2oExportado).toFixed(0);
+    text += `  └ Balanço K2O: Aplicado ${h.adubacaoRealK2O}kg | Exportado ${exportado.k2oExportado}kg (Saldo: ${saldoK} kg/ha)\n`;
+  });
+
+  text += `\n─────────────────────────────────────────\n`;
+  text += `Fazenda Recreio do Morro • Aprendizado de Máquina Retroalimentado\n`;
+  return text;
+}
+

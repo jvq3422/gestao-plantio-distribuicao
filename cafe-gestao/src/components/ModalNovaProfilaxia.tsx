@@ -18,8 +18,16 @@ export const ModalNovaProfilaxia: React.FC<ModalNovaProfilaxiaProps> = ({
   onClose,
   onSave,
 }) => {
+  const getHojeFormatado = () => {
+    const now = new Date();
+    const dia = String(now.getDate()).padStart(2, '0');
+    const mes = String(now.getMonth() + 1).padStart(2, '0');
+    const ano = now.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+  };
+
   const [plotId, setPlotId] = useState<string>(preselectedPlotId || plots[0]?.id || '');
-  const [data, setData] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [data, setData] = useState<string>(getHojeFormatado);
   const [tipoTratamento, setTipoTratamento] = useState<TipoTratamentoFitossanitario>('Fungicida');
   const [alvoPragaDoenca, setAlvoPragaDoenca] = useState('');
   const [produtoComercial, setProdutoComercial] = useState('');
@@ -123,17 +131,32 @@ export const ModalNovaProfilaxia: React.FC<ModalNovaProfilaxiaProps> = ({
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Data da Aplicação *:</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-stone-700 block">
+                    Data da Aplicação (Manejo) *:
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setData(getHojeFormatado())}
+                    className="text-[11px] text-rose-700 hover:text-rose-800 font-bold hover:underline"
+                  >
+                    Hoje
+                  </button>
+                </div>
                 <div className="relative">
                   <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
                   <input
-                    type="date"
+                    type="text"
                     required
+                    placeholder="Ex: 15/10/2026 ou Outubro/2026"
                     value={data}
                     onChange={(e) => setData(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 border border-stone-300 rounded-xl bg-stone-50 font-bold"
+                    className="w-full pl-9 pr-3 py-2 border border-stone-300 rounded-xl bg-stone-50 font-bold text-stone-900 placeholder:font-normal placeholder:text-stone-400 focus:bg-white focus:ring-2 focus:ring-rose-500 focus:outline-none"
                   />
                 </div>
+                <p className="text-[10px] text-stone-500 mt-0.5">
+                  Informe a data (DD/MM/AAAA) ou período do manejo
+                </p>
               </div>
             </div>
 

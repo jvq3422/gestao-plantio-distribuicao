@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Plot, HarvestRecord, SoilAnalysis } from '../types';
 import { calcularExportacaoColheita, analisarHistoricoTalhao } from '../services/historyFeedbackEngine';
-import { Plus, Award, Scale, Sparkles, Trash2 } from 'lucide-react';
+import { Plus, Award, Scale, Sparkles, Trash2, FileSpreadsheet } from 'lucide-react';
+import { RelatorioHistoricoModal } from './RelatorioHistoricoModal';
 
 interface HistoricoFeedbackViewProps {
   plots: Plot[];
@@ -19,6 +20,7 @@ export const HistoricoFeedbackView: React.FC<HistoricoFeedbackViewProps> = ({
   onDeleteHarvest,
 }) => {
   const [selectedPlotId, setSelectedPlotId] = useState<string>(plots[0]?.id || '');
+  const [isRelatorioOpen, setIsRelatorioOpen] = useState(false);
 
   React.useEffect(() => {
     if (!selectedPlotId && plots.length > 0) {
@@ -63,6 +65,15 @@ export const HistoricoFeedbackView: React.FC<HistoricoFeedbackViewProps> = ({
               </option>
             ))}
           </select>
+
+          <button
+            onClick={() => setIsRelatorioOpen(true)}
+            style={{ backgroundColor: '#231914', color: '#ffffff' }}
+            className="inline-flex items-center space-x-1.5 bg-stone-900 hover:bg-black text-white text-xs sm:text-sm font-bold px-3.5 py-2 rounded-xl transition-colors shadow-sm active:scale-95"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-[#e0a442]" />
+            <span>Relatório (PDF / Excel)</span>
+          </button>
 
           <button
             onClick={() => onOpenNewHarvestModal(selectedPlotId)}
@@ -250,6 +261,13 @@ export const HistoricoFeedbackView: React.FC<HistoricoFeedbackViewProps> = ({
         })
       )}
       </div>
+
+      <RelatorioHistoricoModal
+        isOpen={isRelatorioOpen}
+        onClose={() => setIsRelatorioOpen(false)}
+        harvests={harvests}
+        plots={plots}
+      />
     </div>
   );
 };
