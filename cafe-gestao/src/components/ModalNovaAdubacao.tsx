@@ -8,6 +8,7 @@ interface ModalNovaAdubacaoProps {
   plots: Plot[];
   fertilizers: CommercialFertilizer[];
   preselectedPlotId?: string;
+  adubacaoToEdit?: RegistroAdubacao | null;
   onClose: () => void;
   onSave: (adubacao: RegistroAdubacao) => void;
 }
@@ -17,6 +18,7 @@ export const ModalNovaAdubacao: React.FC<ModalNovaAdubacaoProps> = ({
   plots,
   fertilizers,
   preselectedPlotId,
+  adubacaoToEdit,
   onClose,
   onSave,
 }) => {
@@ -41,14 +43,37 @@ export const ModalNovaAdubacao: React.FC<ModalNovaAdubacaoProps> = ({
   const [custoTotal, setCustoTotal] = useState<number>(0);
   const [observacoes, setObservacoes] = useState('');
 
-  // Keep plotId in sync
+  // Keep fields synchronized when modal opens or editing record changes
   useEffect(() => {
-    if (preselectedPlotId) {
-      setPlotId(preselectedPlotId);
-    } else if (!plotId && plots.length > 0) {
-      setPlotId(plots[0].id);
+    if (!isOpen) return;
+    if (adubacaoToEdit) {
+      setPlotId(adubacaoToEdit.plotId);
+      setData(adubacaoToEdit.data);
+      setAduboNome(adubacaoToEdit.aduboNome);
+      setMarca(adubacaoToEdit.marca || '');
+      setQuantidadeKg(adubacaoToEdit.quantidadeKg);
+      setDoseKgHa(adubacaoToEdit.doseKgHa || 0);
+      setDoseGPorPlanta(adubacaoToEdit.doseGPorPlanta || 0);
+      setModoAplicacao(adubacaoToEdit.modoAplicacao);
+      setEstagioFenologico(adubacaoToEdit.estagioFenologico || 'Pós-colheita / Arranque');
+      setResponsavel(adubacaoToEdit.responsavel || '');
+      setCustoTotal(adubacaoToEdit.custoTotal || 0);
+      setObservacoes(adubacaoToEdit.observacoes || '');
+    } else {
+      setPlotId(preselectedPlotId || plots[0]?.id || '');
+      setData(getHojeFormatado());
+      setAduboNome('');
+      setMarca('');
+      setQuantidadeKg(100);
+      setDoseKgHa(0);
+      setDoseGPorPlanta(0);
+      setModoAplicacao('A lanço na saia');
+      setEstagioFenologico('Pós-colheita / Arranque');
+      setResponsavel('');
+      setCustoTotal(0);
+      setObservacoes('');
     }
-  }, [preselectedPlotId, plots, plotId]);
+  }, [isOpen, adubacaoToEdit, preselectedPlotId, plots]);
 
   // Recalculate dose if plot changes or quantidade changes
   const selectedPlot = plots.find((p) => p.id === plotId);
@@ -100,7 +125,7 @@ export const ModalNovaAdubacao: React.FC<ModalNovaAdubacaoProps> = ({
     }
 
     const reg: RegistroAdubacao = {
-      id: `adub-${Date.now()}`,
+      id: adubacaoToEdit ? adubacaoToEdit.id : `adub-${Date.now()}`,
       plotId,
       data,
       aduboNome: aduboNome.trim(),
@@ -130,9 +155,13 @@ export const ModalNovaAdubacao: React.FC<ModalNovaAdubacaoProps> = ({
             </div>
             <div>
               <h3 className="font-extrabold text-base sm:text-lg text-stone-900">
-                Registrar Aplicação de Adubo
+                {adubacaoToEdit ? 'Editar Registro de Adubação' : 'Registrar Aplicação de Adubo'}
               </h3>
-              <p className="text-xs text-stone-500">Caderno de campo e rastreabilidade nutricional do talhão</p>
+              <p className="text-xs text-stone-500">
+                {adubacaoToEdit
+                  ? 'Atualize doses, insumo, custos ou data deste manejo'
+                  : 'Caderno de campo e rastreabilidade nutricional do talhão'}
+              </p>
             </div>
           </div>
           <button
@@ -351,7 +380,7 @@ export const ModalNovaAdubacao: React.FC<ModalNovaAdubacaoProps> = ({
               type="submit"
               className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold transition-all shadow-md min-h-[44px] active:scale-95"
             >
-              Salvar Adubação
+              {adubacaoToEdit ? 'Salvar Alterações' : 'Salvar Adubação'}
             </button>
           </div>
         </form>

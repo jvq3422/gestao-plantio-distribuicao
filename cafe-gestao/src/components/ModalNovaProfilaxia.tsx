@@ -7,6 +7,7 @@ interface ModalNovaProfilaxiaProps {
   isOpen: boolean;
   plots: Plot[];
   preselectedPlotId?: string;
+  profilaxiaToEdit?: RegistroProfilaxia | null;
   onClose: () => void;
   onSave: (profilaxia: RegistroProfilaxia) => void;
 }
@@ -15,6 +16,7 @@ export const ModalNovaProfilaxia: React.FC<ModalNovaProfilaxiaProps> = ({
   isOpen,
   plots,
   preselectedPlotId,
+  profilaxiaToEdit,
   onClose,
   onSave,
 }) => {
@@ -38,12 +40,31 @@ export const ModalNovaProfilaxia: React.FC<ModalNovaProfilaxiaProps> = ({
   const [observacoes, setObservacoes] = useState('');
 
   useEffect(() => {
-    if (preselectedPlotId) {
-      setPlotId(preselectedPlotId);
-    } else if (!plotId && plots.length > 0) {
-      setPlotId(plots[0].id);
+    if (!isOpen) return;
+    if (profilaxiaToEdit) {
+      setPlotId(profilaxiaToEdit.plotId);
+      setData(profilaxiaToEdit.data);
+      setTipoTratamento(profilaxiaToEdit.tipoTratamento);
+      setAlvoPragaDoenca(profilaxiaToEdit.alvoPragaDoenca);
+      setProdutoComercial(profilaxiaToEdit.produtoComercial);
+      setDosagem(profilaxiaToEdit.dosagem);
+      setVolumeCaldaLHa(profilaxiaToEdit.volumeCaldaLHa || 400);
+      setPeriodoCarenciaDias(profilaxiaToEdit.periodoCarenciaDias || 14);
+      setResponsavel(profilaxiaToEdit.responsavel || '');
+      setObservacoes(profilaxiaToEdit.observacoes || '');
+    } else {
+      setPlotId(preselectedPlotId || plots[0]?.id || '');
+      setData(getHojeFormatado());
+      setTipoTratamento('Fungicida');
+      setAlvoPragaDoenca('');
+      setProdutoComercial('');
+      setDosagem('1.5 L/ha');
+      setVolumeCaldaLHa(400);
+      setPeriodoCarenciaDias(14);
+      setResponsavel('');
+      setObservacoes('');
     }
-  }, [preselectedPlotId, plots, plotId]);
+  }, [isOpen, profilaxiaToEdit, preselectedPlotId, plots]);
 
   if (!isOpen) return null;
 
@@ -62,7 +83,7 @@ export const ModalNovaProfilaxia: React.FC<ModalNovaProfilaxiaProps> = ({
     }
 
     const reg: RegistroProfilaxia = {
-      id: `prof-${Date.now()}`,
+      id: profilaxiaToEdit ? profilaxiaToEdit.id : `prof-${Date.now()}`,
       plotId,
       data,
       tipoTratamento,
@@ -90,10 +111,10 @@ export const ModalNovaProfilaxia: React.FC<ModalNovaProfilaxiaProps> = ({
             </div>
             <div>
               <h3 className="font-extrabold text-base sm:text-lg text-stone-900">
-                Registrar Manejo Fitossanitário / Profilaxia
+                {profilaxiaToEdit ? 'Editar Manejo Fitossanitário / Profilaxia' : 'Registrar Manejo Fitossanitário / Profilaxia'}
               </h3>
               <p className="text-xs text-stone-500">
-                Controle de pragas, doenças, carência e rastreabilidade por talhão
+                {profilaxiaToEdit ? 'Atualize produto, dosagem, carência ou data deste manejo' : 'Controle de pragas, doenças, carência e rastreabilidade por talhão'}
               </p>
             </div>
           </div>
@@ -282,7 +303,7 @@ export const ModalNovaProfilaxia: React.FC<ModalNovaProfilaxiaProps> = ({
               type="submit"
               className="px-5 py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-bold transition-all shadow-md min-h-[44px] active:scale-95"
             >
-              Salvar Registro
+              {profilaxiaToEdit ? 'Salvar Alterações' : 'Salvar Registro'}
             </button>
           </div>
         </form>

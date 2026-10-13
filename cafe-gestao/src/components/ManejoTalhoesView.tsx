@@ -16,6 +16,7 @@ import {
   DollarSign,
   Filter,
   FileSpreadsheet,
+  Edit2,
 } from 'lucide-react';
 import { ModalNovaAdubacao } from './ModalNovaAdubacao';
 import { ModalNovaProfilaxia } from './ModalNovaProfilaxia';
@@ -47,6 +48,8 @@ export const ManejoTalhoesView: React.FC<ManejoTalhoesViewProps> = ({
   const [isModalAdubacaoOpen, setIsModalAdubacaoOpen] = useState(false);
   const [isModalProfilaxiaOpen, setIsModalProfilaxiaOpen] = useState(false);
   const [isRelatorioOpen, setIsRelatorioOpen] = useState(false);
+  const [adubacaoToEdit, setAdubacaoToEdit] = useState<RegistroAdubacao | null>(null);
+  const [profilaxiaToEdit, setProfilaxiaToEdit] = useState<RegistroProfilaxia | null>(null);
 
   // Filter lists
   const filteredAdubacoes = adubacoes.filter((a) => {
@@ -149,7 +152,10 @@ export const ManejoTalhoesView: React.FC<ManejoTalhoesViewProps> = ({
 
           {activeSubTab === 'adubacoes' ? (
             <button
-              onClick={() => setIsModalAdubacaoOpen(true)}
+              onClick={() => {
+                setAdubacaoToEdit(null);
+                setIsModalAdubacaoOpen(true);
+              }}
               className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-md transition-all text-xs active:scale-95"
             >
               <Plus className="w-4 h-4" />
@@ -157,7 +163,10 @@ export const ManejoTalhoesView: React.FC<ManejoTalhoesViewProps> = ({
             </button>
           ) : (
             <button
-              onClick={() => setIsModalProfilaxiaOpen(true)}
+              onClick={() => {
+                setProfilaxiaToEdit(null);
+                setIsModalProfilaxiaOpen(true);
+              }}
               className="flex items-center gap-1.5 px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded-xl shadow-md transition-all text-xs active:scale-95"
             >
               <Plus className="w-4 h-4" />
@@ -232,7 +241,10 @@ export const ManejoTalhoesView: React.FC<ManejoTalhoesViewProps> = ({
                 Registre cada aplicação de adubo, corretivo ou foliar para acompanhar o histórico nutricional e custos de cada talhão.
               </p>
               <button
-                onClick={() => setIsModalAdubacaoOpen(true)}
+                onClick={() => {
+                  setAdubacaoToEdit(null);
+                  setIsModalAdubacaoOpen(true);
+                }}
                 className="mt-4 px-4 py-2 bg-emerald-700 text-white font-bold rounded-xl text-xs hover:bg-emerald-800 transition-all inline-flex items-center gap-1.5"
               >
                 <Plus className="w-4 h-4" />
@@ -272,18 +284,31 @@ export const ManejoTalhoesView: React.FC<ManejoTalhoesViewProps> = ({
                             </span>
                           </p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm('Deseja excluir este registro de adubação?')) {
-                              onDeleteAdubacao(reg.id);
-                            }
-                          }}
-                          className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Excluir Registro"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAdubacaoToEdit(reg);
+                              setIsModalAdubacaoOpen(true);
+                            }}
+                            className="p-1.5 text-stone-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
+                            title="Editar Registro de Adubação"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm('Deseja excluir este registro de adubação?')) {
+                                onDeleteAdubacao(reg.id);
+                              }
+                            }}
+                            className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Excluir Registro"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3 text-xs">
@@ -371,7 +396,10 @@ export const ManejoTalhoesView: React.FC<ManejoTalhoesViewProps> = ({
                 Registre os manejos preventivos e curativos contra fungos, pragas e doenças, controlando os períodos de carência para colheita segura.
               </p>
               <button
-                onClick={() => setIsModalProfilaxiaOpen(true)}
+                onClick={() => {
+                  setProfilaxiaToEdit(null);
+                  setIsModalProfilaxiaOpen(true);
+                }}
                 className="mt-4 px-4 py-2 bg-rose-700 text-white font-bold rounded-xl text-xs hover:bg-rose-800 transition-all inline-flex items-center gap-1.5"
               >
                 <Plus className="w-4 h-4" />
@@ -411,18 +439,31 @@ export const ManejoTalhoesView: React.FC<ManejoTalhoesViewProps> = ({
                             </span>
                           </p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm('Deseja excluir este registro de profilaxia?')) {
-                              onDeleteProfilaxia(reg.id);
-                            }
-                          }}
-                          className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Excluir Registro"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setProfilaxiaToEdit(reg);
+                              setIsModalProfilaxiaOpen(true);
+                            }}
+                            className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
+                            title="Editar Manejo Fitossanitário"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm('Deseja excluir este registro de profilaxia?')) {
+                                onDeleteProfilaxia(reg.id);
+                              }
+                            }}
+                            className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Excluir Registro"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
 
                       <div className="mt-3 space-y-2 text-xs">
@@ -513,16 +554,30 @@ export const ManejoTalhoesView: React.FC<ManejoTalhoesViewProps> = ({
         plots={plots}
         fertilizers={fertilizers}
         preselectedPlotId={selectedPlotId !== 'todos' ? selectedPlotId : undefined}
-        onClose={() => setIsModalAdubacaoOpen(false)}
-        onSave={onAddAdubacao}
+        adubacaoToEdit={adubacaoToEdit}
+        onClose={() => {
+          setIsModalAdubacaoOpen(false);
+          setAdubacaoToEdit(null);
+        }}
+        onSave={(reg) => {
+          onAddAdubacao(reg);
+          setAdubacaoToEdit(null);
+        }}
       />
 
       <ModalNovaProfilaxia
         isOpen={isModalProfilaxiaOpen}
         plots={plots}
         preselectedPlotId={selectedPlotId !== 'todos' ? selectedPlotId : undefined}
-        onClose={() => setIsModalProfilaxiaOpen(false)}
-        onSave={onAddProfilaxia}
+        profilaxiaToEdit={profilaxiaToEdit}
+        onClose={() => {
+          setIsModalProfilaxiaOpen(false);
+          setProfilaxiaToEdit(null);
+        }}
+        onSave={(reg) => {
+          onAddProfilaxia(reg);
+          setProfilaxiaToEdit(null);
+        }}
       />
 
       <RelatorioAdubacaoModal

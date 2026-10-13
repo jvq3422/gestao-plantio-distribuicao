@@ -185,11 +185,22 @@ export class StorageService {
     }
   }
 
-  static addAdubacao(reg: RegistroAdubacao): void {
-    const adubacoes = this.getAdubacoes().filter((a) => a.id !== reg.id);
-    adubacoes.unshift(reg);
-    this.saveAdubacoes(adubacoes, true);
+  static saveAdubacao(reg: RegistroAdubacao): void {
+    const adubacoes = this.getAdubacoes();
+    const idx = adubacoes.findIndex((a) => a.id === reg.id);
+    let updated: RegistroAdubacao[];
+    if (idx >= 0) {
+      updated = [...adubacoes];
+      updated[idx] = reg;
+    } else {
+      updated = [reg, ...adubacoes];
+    }
+    this.saveAdubacoes(updated, true);
     this.syncHook?.('recreio_adubacoes', reg);
+  }
+
+  static addAdubacao(reg: RegistroAdubacao): void {
+    this.saveAdubacao(reg);
   }
 
   static getProfilaxias(): RegistroProfilaxia[] {
@@ -211,11 +222,22 @@ export class StorageService {
     }
   }
 
-  static addProfilaxia(reg: RegistroProfilaxia): void {
-    const profilaxias = this.getProfilaxias().filter((p) => p.id !== reg.id);
-    profilaxias.unshift(reg);
-    this.saveProfilaxias(profilaxias, true);
+  static saveProfilaxia(reg: RegistroProfilaxia): void {
+    const profilaxias = this.getProfilaxias();
+    const idx = profilaxias.findIndex((p) => p.id === reg.id);
+    let updated: RegistroProfilaxia[];
+    if (idx >= 0) {
+      updated = [...profilaxias];
+      updated[idx] = reg;
+    } else {
+      updated = [reg, ...profilaxias];
+    }
+    this.saveProfilaxias(updated, true);
     this.syncHook?.('recreio_profilaxias', reg);
+  }
+
+  static addProfilaxia(reg: RegistroProfilaxia): void {
+    this.saveProfilaxia(reg);
   }
 
   // --- TALHÕES ---
